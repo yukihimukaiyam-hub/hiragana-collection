@@ -240,7 +240,6 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 
 <div class="nav-tabs">
   <button class="tab-btn active" data-tab="camera" onclick="switchTab('camera')"><span class="tab-icon">📷</span>さつえい</button>
-  <button class="tab-btn" data-tab="collection" onclick="switchTab('collection')"><span class="tab-icon">🔤</span>てもち</button>
   <button class="tab-btn" data-tab="word" onclick="switchTab('word')"><span class="tab-icon">✏️</span>ことば</button>
   <button class="tab-btn" data-tab="zukan" onclick="switchTab('zukan')"><span class="tab-icon">📖</span>ずかん</button>
   <button class="tab-btn" data-tab="awards" onclick="switchTab('awards')"><span class="tab-icon">🏆</span>しょうじょう</button>
@@ -278,7 +277,14 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
       <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">👆 みつけたひらがなをおしてね！</div>
       <div class="manual-selected-area" id="manualSelected"></div>
       <div id="manualKanaGrid"></div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
+      <!-- 変換ボタン -->
+      <div class="mod-btns">
+        <button class="mod-btn" id="modDaku"   onclick="modifyLast('daku')"  title="濁点">゛</button>
+        <button class="mod-btn" id="modHandaku" onclick="modifyLast('handaku')" title="半濁点">゜</button>
+        <button class="mod-btn" id="modSmall"  onclick="modifyLast('small')" title="小さくする">ちいさく</button>
+        <button class="mod-btn" id="modDel"    onclick="deleteLast()"        title="最後を消す">⌫</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
         <button class="btn-green" style="margin:0;flex:2;font-size:13px;padding:10px;" onclick="addManualKana()">➕ てもちにくわえる</button>
         <button class="btn-secondary" style="margin:0;flex:1;font-size:13px;padding:10px;" onclick="clearManual()">🗑️ けす</button>
       </div>
@@ -289,22 +295,27 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
   <button class="btn-secondary" style="margin-top:10px" onclick="addDemoKana()">🎲 ランダムにもらう</button>
 </div>
 
-<!-- COLLECTION -->
-<div id="screen-collection" class="screen">
-  <div class="section-title">🔤 てもちのひらがな</div>
-  <div class="collection-grid" id="collectionGrid"></div>
-  <div style="text-align:center;color:#ccc;font-size:14px;padding:28px 0" id="emptyCollection">まだひらがながありません。<br>さつえいしてあつめよう！</div>
-</div>
-
 <!-- WORD -->
 <div id="screen-word" class="screen">
   <div class="section-title">✏️ ことばをつくろう</div>
+
+  <!-- つくったことば -->
   <div class="word-area empty" id="wordArea"></div>
+
+  <!-- てもちのひらがな一覧 -->
+  <div style="background:white;border-radius:16px;padding:12px;box-shadow:var(--shadow);margin-bottom:12px;">
+    <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">🔤 てもちのひらがな</div>
+    <div class="collection-grid" id="collectionGrid"></div>
+    <div style="text-align:center;color:#ccc;font-size:12px;padding:10px 0;display:none" id="emptyCollection">まだひらがながありません</div>
+  </div>
+
+  <!-- ならべるパレット -->
   <div class="palette-area">
-    <h3>もっているひらがな（おして ならべよう）</h3>
+    <h3>おして ことばを ならべよう</h3>
     <div class="palette-grid" id="paletteGrid"></div>
     <div style="text-align:center;color:#ccc;font-size:12px;padding:8px 0;display:none" id="emptyPalette">てもちにひらがながありません</div>
   </div>
+
   <div class="word-actions">
     <button class="btn-primary" onclick="checkWord()">🌟 ことばをチェック！</button>
     <button class="btn-secondary" onclick="clearWord()">🗑️ けす</button>
@@ -561,7 +572,7 @@ const CATEGORIES={
   ]}
 };
 
-const ALL_KANA='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'.split('');
+const ALL_KANA='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょゎ'.split('');
 // あいうえお表順（5列）
 const AIUEO_TABLE=['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','','ゆ','','よ','ら','り','る','れ','ろ','わ','','','','を','ん','','','',''];
 
@@ -820,8 +831,8 @@ function switchTab(tab){
   if(screen) screen.classList.add('active');
   const btn=document.querySelector(`[data-tab="${tab}"]`);
   if(btn) btn.classList.add('active');
-  if(tab==='collection') renderCollection();
-  if(tab==='word') renderPalette();
+  if(tab==='collection') renderCollection(); // kept for compatibility
+  if(tab==='word'){renderCollection();renderPalette();}
   if(tab==='zukan') renderZukan();
   if(tab==='awards') renderAwards();
   if(tab==='parent') updateParentStats();
@@ -1020,9 +1031,54 @@ function buildManualGrid(){
     grid.appendChild(b);
   });
 }
+// 濁点変換マップ
+const DAKU_MAP={
+  'か':'が','き':'ぎ','く':'ぐ','け':'げ','こ':'ご',
+  'さ':'ざ','し':'じ','す':'ず','せ':'ぜ','そ':'ぞ',
+  'た':'だ','ち':'ぢ','つ':'づ','て':'で','と':'ど',
+  'は':'ば','ひ':'び','ふ':'ぶ','へ':'べ','ほ':'ぼ',
+  'が':'か','ぎ':'き','ぐ':'く','げ':'け','ご':'こ',
+  'ざ':'さ','じ':'し','ず':'す','ぜ':'せ','ぞ':'そ',
+  'だ':'た','ぢ':'ち','づ':'つ','で':'て','ど':'と',
+  'ば':'は','び':'ひ','ぶ':'ふ','べ':'へ','ぼ':'ほ',
+};
+const HANDAKU_MAP={
+  'は':'ぱ','ひ':'ぴ','ふ':'ぷ','へ':'ぺ','ほ':'ぽ',
+  'ぱ':'は','ぴ':'ひ','ぷ':'ふ','ぺ':'へ','ぽ':'ほ',
+};
+const SMALL_MAP={
+  'あ':'ぁ','い':'ぃ','う':'ぅ','え':'ぇ','お':'ぉ',
+  'か':'ヵ','け':'ヶ',
+  'つ':'っ','や':'ゃ','ゆ':'ゅ','よ':'ょ','わ':'ゎ',
+  'ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お',
+  'っ':'つ','ゃ':'や','ゅ':'ゆ','ょ':'よ','ゎ':'わ',
+};
+
 function manualTap(btn){
   const k=btn.dataset.k;
   manualSelected.push(k);
+  renderManualSelected();
+}
+
+function modifyLast(type){
+  if(manualSelected.length===0) return;
+  const last=manualSelected[manualSelected.length-1];
+  let next=null;
+  if(type==='daku')    next=DAKU_MAP[last]||null;
+  if(type==='handaku') next=HANDAKU_MAP[last]||null;
+  if(type==='small')   next=SMALL_MAP[last]||null;
+  if(next){
+    manualSelected[manualSelected.length-1]=next;
+    renderManualSelected();
+    showToast(`${last} → ${next}`);
+  } else {
+    showToast('この文字はへんかんできません');
+  }
+}
+
+function deleteLast(){
+  if(manualSelected.length===0) return;
+  manualSelected.pop();
   renderManualSelected();
 }
 function renderManualSelected(){
