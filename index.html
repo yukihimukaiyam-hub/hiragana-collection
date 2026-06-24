@@ -80,7 +80,7 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 .manual-box{background:white;border-radius:20px;padding:14px;margin-top:10px;box-shadow:var(--shadow);}
 .manual-box h3{font-size:13px;color:#888;margin-bottom:10px;font-weight:700;}
 .manual-kana-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:10px;width:100%;}
-.mkb{aspect-ratio:1;background:#f5f5f5;border:2px solid #eee;border-radius:10px;font-size:20px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;font-family:inherit;color:var(--dark);padding:0;min-width:0;min-height:44px;}
+.mkb{aspect-ratio:1;background:#f5f5f5;border:2px solid #eee;border-radius:10px;font-size:22px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;font-family:inherit;color:var(--dark);padding:0;min-width:0;min-height:48px;}
 .mkb:active{transform:scale(0.88);}
 .mkb.sel{background:linear-gradient(135deg,var(--sky),var(--lavender));color:white;border-color:var(--sky);}
 .manual-selected-area{display:flex;flex-wrap:wrap;gap:6px;min-height:46px;background:#fafafa;border-radius:12px;padding:8px;margin-bottom:10px;border:2px dashed #ddd;align-items:center;}
@@ -109,6 +109,11 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 .word-actions{display:flex;gap:8px;}
 .word-actions .btn-primary{margin:0;flex:2;font-size:14px;}
 .word-actions .btn-secondary{margin:0;flex:1;font-size:14px;}
+
+/* 変換ボタン */
+.mod-btns{display:flex;gap:6px;margin-top:6px;margin-bottom:4px;}
+.mod-btn{flex:1;padding:10px 2px;background:white;border:2px solid var(--sky);border-radius:10px;font-family:inherit;font-size:16px;font-weight:900;color:var(--sky);cursor:pointer;text-align:center;transition:all .15s;min-height:44px;}
+.mod-btn:active{background:var(--sky);color:white;transform:scale(0.95);}
 .hint-box{background:linear-gradient(135deg,#FFF3CD,#FFE082);border-radius:12px;padding:10px 14px;font-size:12px;color:#856404;font-weight:700;display:none;align-items:center;gap:8px;margin-top:10px;}
 
 /* ZUKAN */
@@ -257,36 +262,39 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
   </div>
 
   <div id="cameraSection">
-    <!-- カメラボタン -->
-    <label class="capture-btn cam" style="display:flex;width:100%;padding:16px;margin-bottom:12px;justify-content:center;gap:10px;">
+
+    <!-- ① カメラボタン -->
+    <label class="capture-btn cam" style="display:flex;width:100%;padding:14px;margin-bottom:10px;justify-content:center;gap:10px;border-radius:16px;">
       <input type="file" id="cameraInput" accept="image/*" capture onchange="handleFileSelect(event)">
-      <span style="font-size:28px;">📷</span>
+      <span style="font-size:26px;">📷</span>
       <span style="font-size:16px;font-weight:900;">カメラをひらく</span>
     </label>
 
-    <!-- 撮影後の画像 -->
-    <img class="preview-img-small" id="previewImg" alt="">
+    <!-- ② 撮影後の画像（sticky固定） -->
+    <div id="previewWrap" style="display:none;position:sticky;top:0;z-index:50;margin-bottom:10px;">
+      <img class="preview-img-small" id="previewImg" alt="" style="display:block;max-height:180px;border-radius:14px;width:100%;object-fit:contain;background:#f0f0f0;border:2px solid #eee;">
+    </div>
 
-    <!-- キャッチコピー -->
-    <div style="background:linear-gradient(135deg,#E8F7FF,#F0FFF4);border-radius:14px;padding:14px 16px;margin-bottom:12px;text-align:center;font-size:15px;font-weight:900;color:var(--dark);line-height:1.8;">
+    <!-- ③ キャッチコピー -->
+    <div style="background:linear-gradient(135deg,#E8F7FF,#F0FFF4);border-radius:14px;padding:12px 16px;margin-bottom:10px;text-align:center;font-size:15px;font-weight:900;color:var(--dark);line-height:1.8;">
       がめん の なか の<br>ひらがな を あつめよう！
     </div>
 
-    <!-- ひらがな表 -->
+    <!-- ④ ひらがな表（全幅） -->
     <div style="background:white;border-radius:16px;padding:12px;box-shadow:var(--shadow);">
       <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">👆 みつけたひらがなをおしてね！</div>
       <div class="manual-selected-area" id="manualSelected"></div>
       <div id="manualKanaGrid"></div>
-      <!-- 変換ボタン -->
-      <div class="mod-btns">
-        <button class="mod-btn" id="modDaku"   onclick="modifyLast('daku')"  title="濁点">゛</button>
-        <button class="mod-btn" id="modHandaku" onclick="modifyLast('handaku')" title="半濁点">゜</button>
-        <button class="mod-btn" id="modSmall"  onclick="modifyLast('small')" title="小さくする">ちいさく</button>
-        <button class="mod-btn" id="modDel"    onclick="deleteLast()"        title="最後を消す">⌫</button>
+      <!-- ⑤ 変換ボタン（ん列の下） -->
+      <div class="mod-btns" style="margin-top:6px;">
+        <button class="mod-btn" onclick="modifyLast('daku')"   title="濁点">゛</button>
+        <button class="mod-btn" onclick="modifyLast('handaku')" title="半濁点">゜</button>
+        <button class="mod-btn" onclick="modifyLast('small')"  title="小さくする">ちいさく</button>
+        <button class="mod-btn" onclick="deleteLast()"          title="最後を消す">⌫</button>
       </div>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <button class="btn-green" style="margin:0;flex:2;font-size:13px;padding:10px;" onclick="addManualKana()">➕ てもちにくわえる</button>
-        <button class="btn-secondary" style="margin:0;flex:1;font-size:13px;padding:10px;" onclick="clearManual()">🗑️ けす</button>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn-green" style="margin:0;flex:2;font-size:13px;padding:11px;" onclick="addManualKana()">➕ てもちにくわえる</button>
+        <button class="btn-secondary" style="margin:0;flex:1;font-size:13px;padding:11px;" onclick="clearManual()">🗑️ けす</button>
       </div>
     </div>
   </div>
@@ -314,14 +322,6 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
     <h3>おして ことばを ならべよう</h3>
     <div class="palette-grid" id="paletteGrid"></div>
     <div style="text-align:center;color:#ccc;font-size:12px;padding:8px 0;display:none" id="emptyPalette">てもちにひらがながありません</div>
-  </div>
-
-  <!-- ことばへんかんボタン -->
-  <div class="mod-btns" style="margin-bottom:10px;">
-    <button class="mod-btn" onclick="modifyWordLast('daku')"   title="濁点">゛</button>
-    <button class="mod-btn" onclick="modifyWordLast('handaku')" title="半濁点">゜</button>
-    <button class="mod-btn" onclick="modifyWordLast('small')"  title="小さくする">ちいさく</button>
-    <button class="mod-btn" onclick="deleteWordLast()"         title="最後を消す">⌫</button>
   </div>
 
   <div class="word-actions">
@@ -857,7 +857,9 @@ function handleFileSelect(e){
   reader.onload=(ev)=>{
     selectedImageDataUrl=ev.target.result;
     const img=document.getElementById('previewImg');
-    if(img){img.src=ev.target.result;img.style.display='block';}
+    const wrap=document.getElementById('previewWrap');
+    if(img){img.src=ev.target.result;}
+    if(wrap){wrap.style.display='block';}
     showToast('📷 しゃしんをよみこみました！');
     const rb=document.getElementById('resultBox');
     if(rb) rb.style.display='none';
@@ -1143,7 +1145,15 @@ function renderPalette(){
   const keys=Object.keys(myKana);
   if(keys.length===0){empty.style.display='block';return;}
   empty.style.display='none';
-  keys.sort().forEach(k=>{
+
+  // あいうえお順で全文字をグループ表示
+  const ORDER='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'+
+    'がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょゎ';
+  const sorted=keys.slice().sort((a,b)=>{
+    const ia=ORDER.indexOf(a), ib=ORDER.indexOf(b);
+    return (ia===-1?999:ia)-(ib===-1?999:ib);
+  });
+  sorted.forEach(k=>{
     for(let i=0;i<myKana[k];i++){
       const c=document.createElement('div');c.className='palette-chip';c.textContent=k;
       c.dataset.kana=k;c.dataset.idx=i;c.onclick=()=>addToWord(c);
