@@ -271,17 +271,16 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
       <span style="font-size:16px;font-weight:900;">カメラをひらく</span>
     </label>
 
-    <!-- ② 撮影後の画像（sticky固定） -->
-    <div id="previewWrap" style="display:none;position:sticky;top:0;z-index:50;margin-bottom:10px;">
-      <img class="preview-img-small" id="previewImg" alt="" style="display:block;max-height:180px;border-radius:14px;width:100%;object-fit:contain;background:#f0f0f0;border:2px solid #eee;">
+    <!-- ② 撮影後の画像＋キャッチコピー（sticky固定） -->
+    <div id="previewWrap" style="position:sticky;top:56px;z-index:50;margin-bottom:10px;background:linear-gradient(160deg,#E8F7FF,#FFF8EE);padding:8px;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+      <img class="preview-img-small" id="previewImg" alt="" style="display:none;max-height:160px;border-radius:10px;width:100%;object-fit:contain;background:#f0f0f0;border:2px solid #eee;margin-bottom:6px;">
+      <div style="text-align:center;font-size:14px;font-weight:900;color:var(--dark);line-height:1.7;">
+        がめん の なか の ひらがな を あつめよう！<br>
+        <span style="font-size:12px;color:#888;font-weight:700;">👆 みつけたひらがなをおしてね！</span>
+      </div>
     </div>
 
-    <!-- ③ キャッチコピー -->
-    <div style="background:linear-gradient(135deg,#E8F7FF,#F0FFF4);border-radius:14px;padding:12px 16px;margin-bottom:10px;text-align:center;font-size:15px;font-weight:900;color:var(--dark);line-height:1.8;">
-      がめん の なか の<br>ひらがな を あつめよう！
-    </div>
-
-    <!-- ④ ひらがな表（全幅） -->
+    <!-- ひらがな表（全幅） -->
     <div style="background:white;border-radius:16px;padding:12px;box-shadow:var(--shadow);">
       <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">👆 みつけたひらがなをおしてね！</div>
       <div class="manual-selected-area" id="manualSelected"></div>
@@ -536,6 +535,30 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 <script>
 // ===== DATA =====
 const CATEGORIES={
+  はな:{label:'🌸 はな',items:[
+    {name:'さくら',emoji:'🌸'},{name:'たんぽぽ',emoji:'🌼'},{name:'ひまわり',emoji:'🌻'},
+    {name:'チューリップ',emoji:'🌷'},{name:'バラ',emoji:'🌹'},{name:'すみれ',emoji:'💜'},
+    {name:'あさがお',emoji:'🌺'},{name:'コスモス',emoji:'🌸'},{name:'なのはな',emoji:'🌼'},
+    {name:'マーガレット',emoji:'🌼'},{name:'クローバー',emoji:'🍀'},{name:'ラベンダー',emoji:'💜'},
+    {name:'サクラソウ',emoji:'🌸'},{name:'アジサイ',emoji:'💠'},{name:'ベゴニア',emoji:'🌺'},
+    {name:'パンジー',emoji:'🌸'},{name:'スミレ',emoji:'💜'},{name:'ネモフィラ',emoji:'🔵'},
+    {name:'やまぶき',emoji:'🌼'},{name:'はすのはな',emoji:'🪷'},{name:'もくれん',emoji:'🌸'},
+    {name:'ふじ',emoji:'💜'},{name:'キキョウ',emoji:'🔵'},{name:'なでしこ',emoji:'🌸'},
+    {name:'ゆり',emoji:'🌷'},{name:'はなみずき',emoji:'🌸'},{name:'ぼたん',emoji:'🌺'},
+    {name:'はなしょうぶ',emoji:'💜'},{name:'カーネーション',emoji:'🌹'},{name:'ガーベラ',emoji:'🌼'}
+  ]},
+  のりもの:{label:'🚗 のりもの',items:[
+    {name:'くるま',emoji:'🚗'},{name:'でんしゃ',emoji:'🚃'},{name:'ひこうき',emoji:'✈️'},
+    {name:'ふね',emoji:'⛵'},{name:'じてんしゃ',emoji:'🚲'},{name:'バス',emoji:'🚌'},
+    {name:'タクシー',emoji:'🚕'},{name:'しょうぼうしゃ',emoji:'🚒'},{name:'きゅうきゅうしゃ',emoji:'🚑'},
+    {name:'けいさつしゃ',emoji:'🚓'},{name:'ロケット',emoji:'🚀'},{name:'ヘリコプター',emoji:'🚁'},
+    {name:'ちかてつ',emoji:'🚇'},{name:'しんかんせん',emoji:'🚄'},{name:'トラック',emoji:'🚚'},
+    {name:'ショベルカー',emoji:'🚜'},{name:'トラクター',emoji:'🚜'},{name:'バイク',emoji:'🏍️'},
+    {name:'スクーター',emoji:'🛵'},{name:'カヌー',emoji:'🛶'},{name:'ゴンドラ',emoji:'🚡'},
+    {name:'キックボード',emoji:'🛴'},{name:'うちゅうせん',emoji:'🛸'},{name:'ふうせん',emoji:'🎈'},
+    {name:'サンタそり',emoji:'🛷'},{name:'クルーズせん',emoji:'🛳️'},{name:'きどうしゃ',emoji:'🚊'},
+    {name:'モノレール',emoji:'🚝'},{name:'きかんしゃ',emoji:'🚂'},{name:'ちょうとっきゅう',emoji:'🚅'}
+  ]},
   どうぶつ:{label:'🐾 どうぶつ',items:[
     {name:'いぬ',emoji:'🐕'},{name:'ねこ',emoji:'🐈'},{name:'うさぎ',emoji:'🐇'},
     {name:'くま',emoji:'🐻'},{name:'きつね',emoji:'🦊'},{name:'たぬき',emoji:'🦡'},
@@ -544,33 +567,45 @@ const CATEGORIES={
     {name:'ぶた',emoji:'🐷'},{name:'にわとり',emoji:'🐓'},{name:'かも',emoji:'🦆'},
     {name:'はと',emoji:'🕊️'},{name:'すずめ',emoji:'🐦'},{name:'かわうそ',emoji:'🦦'},
     {name:'らくだ',emoji:'🐪'},{name:'さい',emoji:'🦏'},{name:'かば',emoji:'🦛'},
-    {name:'かんがるー',emoji:'🦘'},{name:'こうもり',emoji:'🦇'},{name:'はりねずみ',emoji:'🦔'},
-    {name:'りす',emoji:'🐿️'},{name:'くじら',emoji:'🐋'},{name:'いるか',emoji:'🐬'},
-    {name:'さる',emoji:'🐒'},{name:'とら',emoji:'🐯'},{name:'ライオン',emoji:'🦁'}
+    {name:'かんがるー',emoji:'🦘'},{name:'はりねずみ',emoji:'🦔'},{name:'りす',emoji:'🐿️'},
+    {name:'くじら',emoji:'🐋'},{name:'いるか',emoji:'🐬'},{name:'さる',emoji:'🐒'},
+    {name:'とら',emoji:'🐯'},{name:'ライオン',emoji:'🦁'},{name:'パンダ',emoji:'🐼'}
   ]},
-  たべもの:{label:'🍎 たべもの',items:[
+  くだもの:{label:'🍎 くだもの',items:[
     {name:'りんご',emoji:'🍎'},{name:'いちご',emoji:'🍓'},{name:'ぶどう',emoji:'🍇'},
     {name:'もも',emoji:'🍑'},{name:'みかん',emoji:'🍊'},{name:'すいか',emoji:'🍉'},
     {name:'バナナ',emoji:'🍌'},{name:'なし',emoji:'🍐'},{name:'さくらんぼ',emoji:'🍒'},
-    {name:'きうい',emoji:'🥝'},{name:'とまと',emoji:'🍅'},{name:'にんじん',emoji:'🥕'},
-    {name:'きゅうり',emoji:'🥒'},{name:'なす',emoji:'🍆'},{name:'とうもろこし',emoji:'🌽'},
-    {name:'おにぎり',emoji:'🍙'},{name:'ラーメン',emoji:'🍜'},{name:'すし',emoji:'🍣'},
-    {name:'カレー',emoji:'🍛'},{name:'ケーキ',emoji:'🎂'},{name:'アイス',emoji:'🍦'},
-    {name:'ドーナツ',emoji:'🍩'},{name:'ピザ',emoji:'🍕'},{name:'ハンバーガー',emoji:'🍔'},
-    {name:'たこやき',emoji:'🐙'},{name:'うどん',emoji:'🍜'},{name:'そば',emoji:'🍜'},
-    {name:'パン',emoji:'🍞'},{name:'チョコ',emoji:'🍫'},{name:'プリン',emoji:'🍮'}
+    {name:'きうい',emoji:'🥝'},{name:'メロン',emoji:'🍈'},{name:'パイナップル',emoji:'🍍'},
+    {name:'マンゴー',emoji:'🥭'},{name:'レモン',emoji:'🍋'},{name:'ライム',emoji:'🍋'},
+    {name:'ブルーベリー',emoji:'🫐'},{name:'スイカ',emoji:'🍉'},{name:'あんず',emoji:'🍑'},
+    {name:'いちじく',emoji:'🍈'},{name:'ざくろ',emoji:'🍎'},{name:'ゆず',emoji:'🍋'},
+    {name:'ぽんかん',emoji:'🍊'},{name:'グレープフルーツ',emoji:'🍊'},{name:'かき',emoji:'🟠'},
+    {name:'なつみかん',emoji:'🍊'},{name:'うめ',emoji:'🟢'},{name:'びわ',emoji:'🟡'},
+    {name:'クランベリー',emoji:'🔴'},{name:'アボカド',emoji:'🥑'},{name:'ドラゴンフルーツ',emoji:'🐉'}
   ]},
-  のりもの:{label:'🚗 のりもの',items:[
-    {name:'くるま',emoji:'🚗'},{name:'でんしゃ',emoji:'🚃'},{name:'ひこうき',emoji:'✈️'},
-    {name:'ふね',emoji:'⛵'},{name:'じてんしゃ',emoji:'🚲'},{name:'バス',emoji:'🚌'},
-    {name:'タクシー',emoji:'🚕'},{name:'しょうぼうしゃ',emoji:'🚒'},{name:'きゅうきゅうしゃ',emoji:'🚑'},
-    {name:'けいさつしゃ',emoji:'🚓'},{name:'ロケット',emoji:'🚀'},{name:'ヘリコプター',emoji:'🚁'},
-    {name:'ちかてつ',emoji:'🚇'},{name:'しんかんせん',emoji:'🚄'},{name:'トラック',emoji:'🚚'},
-    {name:'ショベルカー',emoji:'🚧'},{name:'トラクター',emoji:'🚜'},{name:'バイク',emoji:'🏍️'},
-    {name:'スクーター',emoji:'🛵'},{name:'ヨット',emoji:'⛵'},{name:'カヌー',emoji:'🛶'},
-    {name:'ゴンドラ',emoji:'🚡'},{name:'キックボード',emoji:'🛴'},{name:'うちゅうせん',emoji:'🛸'},
-    {name:'ふうせん',emoji:'🎈'},{name:'サンタそり',emoji:'🛷'},{name:'きゅうりゅうかん',emoji:'🛳️'},
-    {name:'ちんちんでんしゃ',emoji:'🚊'},{name:'モノレール',emoji:'🚝'},{name:'ほうせんか',emoji:'🚂'}
+  やさい:{label:'🥕 やさい',items:[
+    {name:'にんじん',emoji:'🥕'},{name:'きゅうり',emoji:'🥒'},{name:'なす',emoji:'🍆'},
+    {name:'とうもろこし',emoji:'🌽'},{name:'トマト',emoji:'🍅'},{name:'ブロッコリー',emoji:'🥦'},
+    {name:'たまねぎ',emoji:'🧅'},{name:'じゃがいも',emoji:'🥔'},{name:'キャベツ',emoji:'🥬'},
+    {name:'ほうれんそう',emoji:'🌿'},{name:'ピーマン',emoji:'🫑'},{name:'かぼちゃ',emoji:'🎃'},
+    {name:'だいこん',emoji:'⬜'},{name:'ごぼう',emoji:'🟫'},{name:'れんこん',emoji:'⚪'},
+    {name:'さつまいも',emoji:'🍠'},{name:'にんにく',emoji:'🧄'},{name:'しょうが',emoji:'🫚'},
+    {name:'もやし',emoji:'🌱'},{name:'ねぎ',emoji:'🌿'},{name:'アスパラ',emoji:'🌿'},
+    {name:'セロリ',emoji:'🌿'},{name:'パセリ',emoji:'🌿'},{name:'しいたけ',emoji:'🍄'},
+    {name:'えのき',emoji:'🍄'},{name:'まいたけ',emoji:'🍄'},{name:'えだまめ',emoji:'🫘'},
+    {name:'そらまめ',emoji:'🫘'},{name:'インゲン',emoji:'🫘'},{name:'オクラ',emoji:'🌿'}
+  ]},
+  いろ:{label:'🌈 いろ',items:[
+    {name:'あか',emoji:'🔴'},{name:'あお',emoji:'🔵'},{name:'きいろ',emoji:'🟡'},
+    {name:'みどり',emoji:'🟢'},{name:'むらさき',emoji:'🟣'},{name:'オレンジ',emoji:'🟠'},
+    {name:'しろ',emoji:'⚪'},{name:'くろ',emoji:'⚫'},{name:'ちゃいろ',emoji:'🟤'},
+    {name:'ピンク',emoji:'🩷'},{name:'みずいろ',emoji:'🩵'},{name:'きみどり',emoji:'💚'},
+    {name:'こん',emoji:'🔷'},{name:'えんじ',emoji:'🔻'},{name:'きはだ',emoji:'💛'},
+    {name:'ぎん',emoji:'⬜'},{name:'きん',emoji:'🟨'},{name:'はいいろ',emoji:'🩶'},
+    {name:'ベージュ',emoji:'🤍'},{name:'クリーム',emoji:'🤍'},{name:'ラベンダー',emoji:'💜'},
+    {name:'ターコイズ',emoji:'🩵'},{name:'あかむらさき',emoji:'🟣'},{name:'ふかみどり',emoji:'🌲'},
+    {name:'そらいろ',emoji:'🩵'},{name:'もも',emoji:'🩷'},{name:'さくら',emoji:'🌸'},
+    {name:'コバルト',emoji:'🔵'},{name:'マゼンタ',emoji:'🩷'},{name:'レモン',emoji:'💛'}
   ]}
 };
 
@@ -583,15 +618,18 @@ const AWARDS=[
   {id:'kana30',emoji:'🌟',name:'30もじマスター',desc:'30もじもあつめた！すごい！',condition:s=>s.totalKana>=30},
   {id:'kana46',emoji:'💫',name:'ひらがなぜんぶ！',desc:'ひらがな46もじぜんぶあつめた！かんぺき！',condition:s=>Object.keys(s.myKana).length>=46},
   {id:'word5',emoji:'📝',name:'ことばはかせ5こ',desc:'5このことばをずかんにとうろく！',condition:s=>s.totalUnlocked>=5},
-  {id:'word15',emoji:'📚',name:'ことばはかせ15こ',desc:'15こもとうろくしたよ！はかせだね！',condition:s=>s.totalUnlocked>=15},
-  {id:'cat_どうぶつ',emoji:'🐾',name:'どうぶつはかせ',desc:'どうぶつずかんをぜんぶうめた！',condition:s=>s.catComplete['どうぶつ']},
-  {id:'cat_たべもの',emoji:'🍎',name:'たべものはかせ',desc:'たべものずかんをぜんぶうめた！',condition:s=>s.catComplete['たべもの']},
+  {id:'word20',emoji:'📚',name:'ことばはかせ20こ',desc:'20こもとうろくしたよ！はかせだね！',condition:s=>s.totalUnlocked>=20},
+  {id:'cat_はな',emoji:'🌸',name:'はなはかせ',desc:'はなずかんをぜんぶうめた！',condition:s=>s.catComplete['はな']},
   {id:'cat_のりもの',emoji:'🚗',name:'のりものはかせ',desc:'のりものずかんをぜんぶうめた！',condition:s=>s.catComplete['のりもの']},
+  {id:'cat_どうぶつ',emoji:'🐾',name:'どうぶつはかせ',desc:'どうぶつずかんをぜんぶうめた！',condition:s=>s.catComplete['どうぶつ']},
+  {id:'cat_くだもの',emoji:'🍎',name:'くだものはかせ',desc:'くだものずかんをぜんぶうめた！',condition:s=>s.catComplete['くだもの']},
+  {id:'cat_やさい',emoji:'🥕',name:'やさいはかせ',desc:'やさいずかんをぜんぶうめた！',condition:s=>s.catComplete['やさい']},
+  {id:'cat_いろ',emoji:'🌈',name:'いろはかせ',desc:'いろずかんをぜんぶうめた！',condition:s=>s.catComplete['いろ']},
   {id:'allcat',emoji:'🏆',name:'ずかんコンプリート！',desc:'ぜんぶのずかんをうめた！きみはてんさい！',condition:s=>Object.values(s.catComplete).every(v=>v)},
 ];
 
 // ===== STATE =====
-let myKana={},unlockedItems=new Set(),currentCategory='どうぶつ',wordSlots=[],earnedAwards=new Set();
+let myKana={},unlockedItems=new Set(),currentCategory='はな',wordSlots=[],earnedAwards=new Set();
 let parentSettings={pin:null,limitEnabled:false,dailyLimitMinutes:30,cameraOff:false};
 let timeState={date:'',playedSeconds:0,extraSeconds:0,sessionStart:null,limitHit:false};
 let pinBuffer='',pinMode='';
@@ -851,9 +889,7 @@ function handleFileSelect(e){
   reader.onload=(ev)=>{
     selectedImageDataUrl=ev.target.result;
     const img=document.getElementById('previewImg');
-    const wrap=document.getElementById('previewWrap');
-    if(img){img.src=ev.target.result;}
-    if(wrap){wrap.style.display='block';}
+    if(img){img.src=ev.target.result;img.style.display='block';}
     showToast('📷 しゃしんをよみこみました！');
     const rb=document.getElementById('resultBox');
     if(rb) rb.style.display='none';
