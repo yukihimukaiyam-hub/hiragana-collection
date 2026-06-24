@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ひらがなコレクション</title>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js'></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+:root{--sky:#5BC8F5;--sun:#FFD93D;--grass:#6BCB77;--coral:#FF6B6B;--lavender:#C3A6F5;--cream:#FFF8EE;--dark:#2D2D4E;--shadow:0 4px 16px rgba(45,45,78,0.12);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP','Hiragino Maru Gothic ProN',sans-serif;background:linear-gradient(160deg,#E8F7FF 0%,#FFF8EE 50%,#F0FFF4 100%);min-height:100vh;color:var(--dark);overflow-x:hidden;}
+
+/* HEADER */
+header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 12px rgba(91,200,245,0.3);position:sticky;top:0;z-index:100;gap:8px;}
+.logo{font-size:18px;font-weight:900;color:white;text-shadow:2px 2px 0 rgba(0,0,0,0.15);white-space:nowrap;}
+.logo span{color:var(--sun);}
+.header-right{display:flex;align-items:center;gap:6px;}
+.header-badge{background:white;border-radius:20px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--sky);display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.timer-badge{background:rgba(255,255,255,0.25);border-radius:20px;padding:5px 9px;font-size:12px;font-weight:700;color:white;display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;}
+.timer-badge.warning{background:rgba(255,100,100,0.4);animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.6;}}
+.parent-btn{background:rgba(255,255,255,0.2);border:none;border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;}
+
+/* NAV */
+.nav-tabs{display:flex;background:white;border-bottom:3px solid var(--sky);overflow-x:auto;scrollbar-width:none;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.tab-btn{flex:1;min-width:68px;padding:9px 4px;border:none;background:none;font-family:inherit;font-size:11px;font-weight:700;color:#999;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;}
+.tab-btn .tab-icon{font-size:17px;}
+.tab-btn.active{color:var(--sky);}
+.tab-btn.active::after{content:'';position:absolute;bottom:-3px;left:10%;width:80%;height:3px;background:var(--sky);border-radius:3px 3px 0 0;}
+
+/* SCREENS */
+.screen{display:none;padding:14px;max-width:500px;margin:0 auto;}
+.screen.active{display:block;}
+.section-title{font-size:18px;font-weight:900;color:var(--dark);margin:12px 0 10px;display:flex;align-items:center;gap:8px;}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--coral),#FF8E53);border:none;border-radius:16px;color:white;font-family:inherit;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #C94B4B;transition:transform .1s,box-shadow .1s;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;}
+.btn-primary:active{transform:translateY(3px);box-shadow:0 1px 0 #C94B4B;}
+.btn-secondary{width:100%;padding:12px;background:white;border:3px solid var(--sky);border-radius:16px;color:var(--sky);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;}
+.btn-secondary:hover{background:#E8F7FF;}
+.btn-green{width:100%;padding:12px;background:linear-gradient(135deg,var(--grass),#4DB86A);border:none;border-radius:14px;color:white;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #3A9A54;transition:transform .1s,box-shadow .1s;margin-bottom:10px;}
+.btn-green:active{transform:translateY(3px);box-shadow:0 1px 0 #3A9A54;}
+
+/* CAMERA */
+.capture-btns{display:flex;gap:10px;margin-bottom:10px;}
+.capture-btn{flex:1;padding:14px 8px;border-radius:18px;border:none;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:transform .15s;}
+.capture-btn:active{transform:scale(0.96);}
+.capture-btn .btn-big-icon{font-size:30px;}
+.capture-btn.cam{background:linear-gradient(135deg,#FF6B6B,#FF8E53);color:white;box-shadow:0 4px 0 #C94B4B;}
+.capture-btn.file{background:linear-gradient(135deg,var(--sky),var(--lavender));color:white;box-shadow:0 4px 0 rgba(91,200,245,0.6);}
+.capture-btn input{display:none;}
+.preview-img{width:100%;border-radius:16px;max-height:200px;object-fit:contain;display:none;margin-bottom:10px;background:#f8f8f8;border:3px solid #eee;}
+
+/* OCR STATUS */
+.ocr-status-box{background:#f0faff;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--sky);display:none;align-items:center;gap:8px;margin-bottom:10px;border:2px solid #d0eeff;}
+.ocr-status-box.show{display:flex;}
+.ocr-progress{flex:1;background:#d0eeff;border-radius:6px;height:8px;overflow:hidden;}
+.ocr-progress-fill{height:100%;background:var(--sky);border-radius:6px;transition:width .3s;}
+
+/* RESULT BOX */
+.result-box{background:white;border-radius:20px;padding:14px;margin-top:10px;box-shadow:var(--shadow);display:none;}
+.result-box h3{font-size:13px;color:#888;margin-bottom:10px;font-weight:700;}
+.kana-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.kana-chip{background:linear-gradient(135deg,var(--sky),var(--lavender));color:white;font-size:22px;font-weight:900;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(91,200,245,0.5);animation:flyIn .5s cubic-bezier(0.34,1.56,0.64,1) both;}
+@keyframes popIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+@keyframes flyIn{from{transform:scale(0) rotate(-20deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+
+/* MANUAL ADD */
+.manual-box{background:white;border-radius:20px;padding:14px;margin-top:10px;box-shadow:var(--shadow);}
+.manual-box h3{font-size:13px;color:#888;margin-bottom:10px;font-weight:700;}
+.manual-kana-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-bottom:10px;}
+.mkb{aspect-ratio:1;background:#f5f5f5;border:2px solid #eee;border-radius:9px;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;font-family:inherit;color:var(--dark);padding:0;}
+.mkb:active{transform:scale(0.88);}
+.mkb.sel{background:linear-gradient(135deg,var(--sky),var(--lavender));color:white;border-color:var(--sky);}
+.manual-selected-area{display:flex;flex-wrap:wrap;gap:6px;min-height:46px;background:#fafafa;border-radius:12px;padding:8px;margin-bottom:10px;border:2px dashed #ddd;align-items:center;}
+.msc{background:linear-gradient(135deg,var(--sun),#FFA500);color:white;font-size:20px;font-weight:900;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:popIn .2s ease both;border:none;font-family:inherit;}
+.manual-empty-hint{color:#ccc;font-size:12px;font-weight:700;}
+.manual-actions{display:flex;gap:8px;}
+.manual-actions .btn-green{margin:0;flex:2;font-size:13px;padding:11px;}
+.manual-actions .btn-secondary{margin:0;flex:1;font-size:13px;padding:11px;}
+
+/* COLLECTION */
+.collection-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:16px;}
+.coll-chip{aspect-ratio:1;background:linear-gradient(135deg,#a8edea,#fed6e3);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:var(--dark);box-shadow:0 2px 6px rgba(0,0,0,0.08);position:relative;cursor:pointer;transition:transform .2s;}
+.coll-chip:hover{transform:scale(1.1);}
+.count-badge{position:absolute;top:-5px;right:-5px;background:var(--coral);color:white;font-size:9px;font-weight:900;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+
+/* WORD */
+.word-area{background:white;border-radius:20px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px;min-height:78px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;}
+.word-area.empty::before{content:'したのもじをならべてことばをつくろう！';color:#ccc;font-size:12px;font-weight:700;}
+.word-slot{background:linear-gradient(135deg,var(--sun),#FFA500);color:white;font-size:24px;font-weight:900;width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 #CC8800;cursor:pointer;animation:popIn .3s ease both;}
+.palette-area{background:white;border-radius:20px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px;}
+.palette-area h3{font-size:12px;color:#888;font-weight:700;margin-bottom:10px;}
+.palette-grid{display:flex;flex-wrap:wrap;gap:7px;}
+.palette-chip{background:linear-gradient(135deg,var(--sky),var(--lavender));color:white;font-size:20px;font-weight:900;width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(91,200,245,0.6);cursor:pointer;transition:transform .15s;user-select:none;}
+.palette-chip:active{transform:scale(0.9);}
+.palette-chip.used{opacity:0.25;pointer-events:none;}
+.word-actions{display:flex;gap:8px;}
+.word-actions .btn-primary{margin:0;flex:2;font-size:14px;}
+.word-actions .btn-secondary{margin:0;flex:1;font-size:14px;}
+.hint-box{background:linear-gradient(135deg,#FFF3CD,#FFE082);border-radius:12px;padding:10px 14px;font-size:12px;color:#856404;font-weight:700;display:none;align-items:center;gap:8px;margin-top:10px;}
+
+/* ZUKAN */
+.category-tabs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-bottom:12px;}
+.category-tabs::-webkit-scrollbar{display:none;}
+.cat-btn{white-space:nowrap;padding:7px 14px;border-radius:20px;border:2px solid var(--sky);background:white;color:var(--sky);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.cat-btn.active{background:var(--sky);color:white;}
+.zukan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.zukan-card{background:white;border-radius:14px;overflow:hidden;box-shadow:var(--shadow);aspect-ratio:3/4;display:flex;flex-direction:column;cursor:pointer;transition:transform .2s;position:relative;}
+.zukan-card:hover{transform:scale(1.03);}
+.zukan-img{flex:1;display:flex;align-items:center;justify-content:center;font-size:38px;background:linear-gradient(135deg,#f8f9fa,#e9ecef);position:relative;}
+.zukan-card.locked .zukan-img{background:linear-gradient(135deg,#ddd,#ccc);}
+.lock-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;font-size:26px;}
+.zukan-card:not(.locked) .lock-overlay{display:none;}
+.zukan-name{padding:5px;text-align:center;font-size:11px;font-weight:900;color:var(--dark);background:white;}
+.zukan-card.locked .zukan-name{color:#aaa;}
+.progress-bar-wrap{background:#eee;border-radius:10px;height:9px;margin-bottom:4px;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--sky),var(--lavender));transition:width .5s ease;}
+.progress-label{font-size:11px;color:#888;font-weight:700;text-align:right;margin-bottom:12px;}
+
+/* AWARDS */
+.awards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;}
+.award-card{background:white;border-radius:20px;padding:16px;box-shadow:var(--shadow);text-align:center;position:relative;overflow:hidden;}
+.award-card.locked{opacity:0.5;filter:grayscale(0.7);}
+.award-card.unlocked{border:3px solid var(--sun);animation:glowPulse 2s ease-in-out infinite;}
+@keyframes glowPulse{0%,100%{box-shadow:0 4px 16px rgba(255,217,61,0.2);}50%{box-shadow:0 4px 24px rgba(255,217,61,0.6);}}
+.award-emoji{font-size:44px;display:block;margin-bottom:6px;}
+.award-title{font-size:12px;font-weight:900;color:var(--dark);margin-bottom:4px;}
+.award-desc{font-size:11px;color:#888;line-height:1.4;}
+.award-ribbon{position:absolute;top:10px;right:-8px;background:var(--coral);color:white;font-size:9px;font-weight:900;padding:3px 14px 3px 10px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,8% 50%);}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--dark);color:white;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:1000;transition:transform .4s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .3s;padding:20px;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal{background:white;border-radius:28px;padding:26px 20px;max-width:340px;width:100%;text-align:center;transform:scale(0.8);transition:transform .4s cubic-bezier(0.34,1.56,0.64,1);}
+.modal-overlay.show .modal{transform:scale(1);}
+.modal-emoji{font-size:64px;margin-bottom:10px;display:block;}
+.modal h2{font-size:20px;font-weight:900;margin-bottom:6px;color:var(--dark);}
+.modal p{font-size:13px;color:#666;margin-bottom:16px;line-height:1.6;}
+.modal-close{background:linear-gradient(135deg,var(--coral),#FF8E53);border:none;border-radius:14px;color:white;font-family:inherit;font-size:15px;font-weight:900;padding:12px 26px;cursor:pointer;box-shadow:0 4px 0 #C94B4B;}
+
+/* CERTIFICATE */
+.cert-modal{background:linear-gradient(135deg,#FFF8DC,#FFFACD);border:4px solid var(--sun);border-radius:28px;padding:28px 20px;max-width:340px;width:100%;text-align:center;transform:scale(0.8);transition:transform .4s cubic-bezier(0.34,1.56,0.64,1);position:relative;}
+.modal-overlay.show .cert-modal{transform:scale(1);}
+.cert-title{font-size:12px;font-weight:700;color:#B8860B;letter-spacing:3px;margin-bottom:6px;}
+.cert-name{font-size:22px;font-weight:900;color:var(--dark);margin-bottom:8px;}
+.cert-emoji{font-size:58px;display:block;margin:8px 0;}
+.cert-body{font-size:13px;color:#555;line-height:1.8;margin-bottom:14px;white-space:pre-line;}
+.cert-seal{font-size:36px;margin-bottom:6px;}
+.cert-date{font-size:11px;color:#999;}
+.cert-border{position:absolute;inset:8px;border:2px dashed rgba(184,134,11,0.3);border-radius:22px;pointer-events:none;}
+
+/* PIN */
+.pin-modal{background:white;border-radius:28px;padding:26px 20px;max-width:340px;width:100%;text-align:center;transform:scale(0.8);transition:transform .4s cubic-bezier(0.34,1.56,0.64,1);}
+.modal-overlay.show .pin-modal{transform:scale(1);}
+.pin-title{font-size:17px;font-weight:900;margin-bottom:6px;color:var(--dark);}
+.pin-sub{font-size:12px;color:#888;margin-bottom:14px;}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin-bottom:14px;}
+.pin-dot{width:15px;height:15px;border-radius:50%;border:2.5px solid #ddd;background:white;transition:all .2s;}
+.pin-dot.filled{background:var(--sky);border-color:var(--sky);}
+.pin-dot.error{background:var(--coral);border-color:var(--coral);animation:shake .4s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.pin-key{padding:13px;background:#f5f5f5;border:none;border-radius:14px;font-family:inherit;font-size:20px;font-weight:700;color:var(--dark);cursor:pointer;transition:background .15s;}
+.pin-key:active{background:#e0e0e0;}
+.pin-key.del{font-size:16px;color:var(--coral);}
+.pin-cancel{background:none;border:none;font-family:inherit;font-size:13px;color:#aaa;cursor:pointer;padding:8px;}
+.pin-error{color:var(--coral);font-size:12px;font-weight:700;min-height:18px;margin-bottom:4px;}
+.extra-time-box{margin-top:10px;margin-bottom:10px;}
+.extra-time-box label{font-size:12px;color:#888;display:block;margin-bottom:6px;font-weight:700;}
+.extra-time-box input{width:100%;padding:9px;border:2px solid #eee;border-radius:10px;font-family:inherit;font-size:16px;font-weight:700;text-align:center;color:var(--dark);}
+.extra-time-box input:focus{outline:none;border-color:var(--sky);}
+
+/* PARENT PANEL */
+.parent-panel{background:white;border-radius:20px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px;}
+.parent-panel h3{font-size:14px;font-weight:900;margin-bottom:12px;color:var(--dark);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f0f0f0;}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-size:12px;font-weight:700;color:var(--dark);}
+.setting-sub{font-size:10px;color:#aaa;margin-top:2px;}
+.num-input{width:65px;padding:7px;border:2px solid #eee;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;text-align:center;color:var(--dark);}
+.num-input:focus{outline:none;border-color:var(--sky);}
+.toggle-switch{width:42px;height:24px;background:#ddd;border-radius:12px;position:relative;cursor:pointer;transition:background .3s;border:none;flex-shrink:0;}
+.toggle-switch.on{background:var(--grass);}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:left .3s;box-shadow:0 1px 4px rgba(0,0,0,0.2);}
+.toggle-switch.on::after{left:21px;}
+.save-btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--sky),var(--lavender));border:none;border-radius:14px;color:white;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 3px 0 rgba(91,200,245,0.6);}
+.pin-change-row{display:flex;gap:8px;margin-top:8px;}
+.pin-change-input{flex:1;padding:9px;border:2px solid #eee;border-radius:10px;font-family:inherit;font-size:17px;font-weight:700;text-align:center;letter-spacing:6px;color:var(--dark);}
+.pin-change-input:focus{outline:none;border-color:var(--sky);}
+.pin-save-btn{padding:9px 14px;background:var(--grass);border:none;border-radius:10px;color:white;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer;}
+
+/* LIMIT OVERLAY */
+.limit-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#2D2D4E,#4A4A7A);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .5s;padding:30px;text-align:center;}
+.limit-overlay.show{opacity:1;pointer-events:all;}
+.limit-emoji{font-size:68px;margin-bottom:14px;}
+.limit-title{font-size:24px;font-weight:900;color:white;margin-bottom:8px;}
+.limit-sub{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:26px;line-height:1.6;}
+.limit-unlock-btn{background:var(--sun);border:none;border-radius:16px;color:var(--dark);font-family:inherit;font-size:15px;font-weight:900;padding:14px 28px;cursor:pointer;box-shadow:0 4px 0 #CC8800;}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,0.9);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;opacity:0;pointer-events:none;transition:opacity .3s;}
+.loading-overlay.show{opacity:1;pointer-events:all;}
+.loading-spinner{width:52px;height:52px;border:6px solid #eee;border-top-color:var(--sky);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:14px;font-weight:700;color:var(--dark);}
+.loading-sub{font-size:12px;color:#aaa;margin-top:6px;}
+
+/* SPARKLE */
+.sparkle{position:fixed;pointer-events:none;z-index:500;font-size:22px;animation:sparkleFly 1s ease-out forwards;}
+@keyframes sparkleFly{from{transform:translateY(0) scale(1);opacity:1;}to{transform:translateY(-80px) scale(0.3);opacity:0;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ひらがな<span>コレクション</span>🌟</div>
+  <div class="header-right">
+    <div class="timer-badge" id="timerBadge" onclick="onTimerBadgeClick()">⏱️ <span id="timerDisplay">∞</span></div>
+    <div class="header-badge">🔤 <span id="totalCount">0</span>もじ</div>
+    <button class="parent-btn" id="bgmBtn" onclick="toggleBGM()" title="BGMのON/OFF">🔊</button>
+    <button class="parent-btn" onclick="openParentMode()">⚙️</button>
+  </div>
+</header>
+
+<div class="nav-tabs">
+  <button class="tab-btn active" data-tab="camera" onclick="switchTab('camera')"><span class="tab-icon">📷</span>さつえい</button>
+  <button class="tab-btn" data-tab="collection" onclick="switchTab('collection')"><span class="tab-icon">🔤</span>てもち</button>
+  <button class="tab-btn" data-tab="word" onclick="switchTab('word')"><span class="tab-icon">✏️</span>ことば</button>
+  <button class="tab-btn" data-tab="zukan" onclick="switchTab('zukan')"><span class="tab-icon">📖</span>ずかん</button>
+  <button class="tab-btn" data-tab="awards" onclick="switchTab('awards')"><span class="tab-icon">🏆</span>しょうじょう</button>
+</div>
+
+<!-- CAMERA -->
+<div id="screen-camera" class="screen active">
+  <div class="section-title">📷 ひらがなをさつえい</div>
+
+  <div id="cameraOffNotice" style="display:none;background:linear-gradient(135deg,#FFF3CD,#FFE082);border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:6px;">🎲</div>
+    <div style="font-size:14px;font-weight:900;color:#856404;">ランダムモードでひらがなをあつめよう！</div>
+    <div style="font-size:11px;color:#9a7a00;margin-top:4px;">カメラはおやさんによってオフになっています</div>
+  </div>
+
+  <div id="cameraSection">
+    <div class="capture-btns">
+      <!-- カメラ直接起動: capture="camera" はAndroidで最も確実 -->
+      <label class="capture-btn cam">
+        <input type="file" id="cameraInput" accept="image/*" capture="camera" onchange="handleFileSelect(event)">
+        <span class="btn-big-icon">📷</span>カメラをひらく
+      </label>
+      <!-- ファイル選択: captureなしでギャラリーのみ -->
+      <label class="capture-btn file">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/gif" onchange="handleFileSelect(event)">
+        <span class="btn-big-icon">🖼️</span>がぞうをえらぶ
+      </label>
+    </div>
+    <img class="preview-img" id="previewImg" alt="">
+    <div class="ocr-status-box" id="ocrStatus">
+      <span id="ocrStatusText">よみとっています…</span>
+      <div class="ocr-progress"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
+    </div>
+    <button class="btn-primary" onclick="analyzeImage()">🔍 ひらがなをよみとる！</button>
+    <div class="result-box" id="resultBox">
+      <h3>📝 みつかったひらがな（おして はずすこともできるよ）</h3>
+      <div class="kana-chips" id="foundKana"></div>
+      <button class="btn-green" style="margin-top:12px" onclick="addFoundKana()">➕ ぜんぶてもちにくわえる！</button>
+    </div>
+    <div class="manual-box">
+      <h3>✍️ てでひらがなをえらぶ</h3>
+      <div class="manual-selected-area" id="manualSelected"></div>
+      <div class="manual-kana-grid" id="manualKanaGrid"></div>
+      <div class="manual-actions">
+        <button class="btn-green" onclick="addManualKana()">➕ てもちにくわえる</button>
+        <button class="btn-secondary" onclick="clearManual()">🗑️ けす</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-secondary" style="margin-top:10px" onclick="addDemoKana()">🎲 ランダムにもらう</button>
+</div>
+
+<!-- COLLECTION -->
+<div id="screen-collection" class="screen">
+  <div class="section-title">🔤 てもちのひらがな</div>
+  <div class="collection-grid" id="collectionGrid"></div>
+  <div style="text-align:center;color:#ccc;font-size:14px;padding:28px 0" id="emptyCollection">まだひらがながありません。<br>さつえいしてあつめよう！</div>
+</div>
+
+<!-- WORD -->
+<div id="screen-word" class="screen">
+  <div class="section-title">✏️ ことばをつくろう</div>
+  <div class="word-area empty" id="wordArea"></div>
+  <div class="palette-area">
+    <h3>もっているひらがな（おして ならべよう）</h3>
+    <div class="palette-grid" id="paletteGrid"></div>
+    <div style="text-align:center;color:#ccc;font-size:12px;padding:8px 0;display:none" id="emptyPalette">てもちにひらがながありません</div>
+  </div>
+  <div class="word-actions">
+    <button class="btn-primary" onclick="checkWord()">🌟 ことばをチェック！</button>
+    <button class="btn-secondary" onclick="clearWord()">🗑️ けす</button>
+  </div>
+  <div class="hint-box" id="hintBox"><span>💡</span><span id="hintText"></span></div>
+</div>
+
+<!-- ZUKAN -->
+<div id="screen-zukan" class="screen">
+  <div class="section-title">📖 ずかん</div>
+  <div class="category-tabs" id="categoryTabs"></div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 30 かいほう</div>
+  <div class="zukan-grid" id="zukanGrid"></div>
+</div>
+
+<!-- AWARDS -->
+<div id="screen-awards" class="screen">
+  <div class="section-title">🏆 しょうじょう・にんていしょ</div>
+  <div class="awards-grid" id="awardsGrid"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- GENERIC MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <span class="modal-emoji" id="modalEmoji"></span>
+    <h2 id="modalTitle"></h2>
+    <p id="modalDesc"></p>
+    <button class="modal-close" onclick="closeModal()">やったー！ 🎉</button>
+  </div>
+</div>
+
+<!-- CERTIFICATE MODAL -->
+<div class="modal-overlay" id="certOverlay">
+  <div class="cert-modal">
+    <div class="cert-border"></div>
+    <div class="cert-title">🌟 にんていしょ 🌟</div>
+    <div class="cert-emoji" id="certEmoji"></div>
+    <div class="cert-name" id="certName"></div>
+    <div class="cert-body" id="certBody"></div>
+    <div class="cert-seal">🏅</div>
+    <div class="cert-date" id="certDate"></div>
+    <button class="modal-close" style="margin-top:14px" onclick="closeCert()">とじる</button>
+  </div>
+</div>
+
+<!-- PIN MODAL -->
+<div class="modal-overlay" id="pinOverlay">
+  <div class="pin-modal">
+    <div class="pin-title" id="pinTitle">🔐 PINをにゅうりょく</div>
+    <div class="pin-sub" id="pinSub">おかあさん・おとうさんのPINをいれてね</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <div id="extraTimeBox" class="extra-time-box" style="display:none">
+      <label>ついかじかん（ふん）</label>
+      <input type="number" id="extraTimeInput" min="1" max="120" value="15">
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key" onclick="pinKey('0')" style="grid-column:2">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <button class="pin-cancel" onclick="closePinModal()">キャンセル</button>
+  </div>
+</div>
+
+<!-- PARENT PANEL -->
+<div class="modal-overlay" id="parentOverlay">
+  <div class="pin-modal" style="max-width:380px;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="pin-title" style="margin:0">⚙️ おやモード</div>
+      <button onclick="closeParentPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;">✕</button>
+    </div>
+    <div class="parent-panel">
+      <h3>⏱️ じかんせいげん</h3>
+      <div class="setting-row">
+        <div><div class="setting-label">じかんせいげん</div><div class="setting-sub">オン/オフ</div></div>
+        <button class="toggle-switch" id="limitToggle" onclick="toggleLimit()"></button>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">いちにちのじかん</div><div class="setting-sub">ふん</div></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" class="num-input" id="dailyLimitInput" min="5" max="240" value="30">
+          <span style="font-size:11px;color:#888;">ふん</span>
+        </div>
+      </div>
+    </div>
+    <div class="parent-panel">
+      <h3>📷 カメラせってい</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">カメラオフモード</div>
+          <div class="setting-sub">オンにするとランダムのみで遊べる</div>
+        </div>
+        <button class="toggle-switch" id="cameraOffToggle" onclick="toggleCameraOff()"></button>
+      </div>
+    </div>
+    <div class="parent-panel">
+      <h3>🔐 PINのへんこう</h3>
+      <div style="font-size:11px;color:#888;margin-bottom:8px;">4けたのすうじ</div>
+      <div class="pin-change-row">
+        <input type="password" class="pin-change-input" id="newPinInput" maxlength="4" inputmode="numeric" placeholder="----">
+        <button class="pin-save-btn" onclick="saveNewPin()">保存</button>
+      </div>
+    </div>
+    <div class="parent-panel">
+      <h3>📊 きょうのきろく</h3>
+      <div class="setting-row">
+        <div class="setting-label">プレイじかん</div>
+        <div style="font-size:15px;font-weight:900;color:var(--sky)" id="todayPlayTime">0ふん</div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">のこりじかん</div>
+        <div style="font-size:15px;font-weight:900;color:var(--grass)" id="remainingTime">--</div>
+      </div>
+    </div>
+    <div class="parent-panel">
+      <h3>💾 データバックアップ</h3>
+      <div style="font-size:11px;color:#888;margin-bottom:10px;">きろくをファイルにほぞん・ふっきゅうできます</div>
+      <div style="display:flex;gap:8px;">
+        <button class="pin-save-btn" style="flex:1;padding:10px;font-size:12px;background:var(--sky)" onclick="exportBackup()">⬇️ バックアップ</button>
+        <label class="pin-save-btn" style="flex:1;padding:10px;font-size:12px;background:var(--grass);cursor:pointer;text-align:center;">
+          ⬆️ ふっきゅう<input type="file" accept=".json" style="display:none" onchange="importBackup(event)">
+        </label>
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveParentSettings()">💾 ほぞん</button>
+  </div>
+</div>
+
+<!-- LIMIT OVERLAY -->
+<div class="limit-overlay" id="limitOverlay">
+  <div class="limit-emoji">😴</div>
+  <div class="limit-title">きょうはここまで！</div>
+  <div class="limit-sub">おやくそくのじかんがきたよ。<br>また あしたあそぼうね！</div>
+  <button class="limit-unlock-btn" onclick="requestUnlock()">⏰ もうすこしあそぶ（おうちのひとに）</button>
+</div>
+
+
+<!-- SETUP WIZARD -->
+<div class="modal-overlay show" id="setupOverlay">
+  <div class="pin-modal" style="max-width:360px;">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:48px;">🌟</div>
+      <div class="pin-title" style="font-size:20px;">ひらがなコレクション</div>
+      <div class="pin-sub">はじめに おやさんのPINをせっていしてね</div>
+    </div>
+    <div id="setupStep1">
+      <div style="font-size:12px;color:#888;margin-bottom:10px;font-weight:700;">① あたらしいPINをきめてね（4けた）</div>
+      <div class="pin-dots" id="setupDots1">
+        <div class="pin-dot" id="sp0"></div><div class="pin-dot" id="sp1"></div>
+        <div class="pin-dot" id="sp2"></div><div class="pin-dot" id="sp3"></div>
+      </div>
+      <div class="pin-error" id="setupError"></div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="setupKey('1')">1</button>
+        <button class="pin-key" onclick="setupKey('2')">2</button>
+        <button class="pin-key" onclick="setupKey('3')">3</button>
+        <button class="pin-key" onclick="setupKey('4')">4</button>
+        <button class="pin-key" onclick="setupKey('5')">5</button>
+        <button class="pin-key" onclick="setupKey('6')">6</button>
+        <button class="pin-key" onclick="setupKey('7')">7</button>
+        <button class="pin-key" onclick="setupKey('8')">8</button>
+        <button class="pin-key" onclick="setupKey('9')">9</button>
+        <button class="pin-key" onclick="setupKey('0')" style="grid-column:2">0</button>
+        <button class="pin-key del" onclick="setupDel()">⌫</button>
+      </div>
+    </div>
+    <div id="setupStep2" style="display:none;">
+      <div style="font-size:12px;color:#888;margin-bottom:10px;font-weight:700;">② もういちどおなじPINをいれてね</div>
+      <div class="pin-dots" id="setupDots2">
+        <div class="pin-dot" id="sp4"></div><div class="pin-dot" id="sp5"></div>
+        <div class="pin-dot" id="sp6"></div><div class="pin-dot" id="sp7"></div>
+      </div>
+      <div class="pin-error" id="setupError2"></div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="setupKey2('1')">1</button>
+        <button class="pin-key" onclick="setupKey2('2')">2</button>
+        <button class="pin-key" onclick="setupKey2('3')">3</button>
+        <button class="pin-key" onclick="setupKey2('4')">4</button>
+        <button class="pin-key" onclick="setupKey2('5')">5</button>
+        <button class="pin-key" onclick="setupKey2('6')">6</button>
+        <button class="pin-key" onclick="setupKey2('7')">7</button>
+        <button class="pin-key" onclick="setupKey2('8')">8</button>
+        <button class="pin-key" onclick="setupKey2('9')">9</button>
+        <button class="pin-key" onclick="setupKey2('0')" style="grid-column:2">0</button>
+        <button class="pin-key del" onclick="setupDel2()">⌫</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">しらべています…</div>
+  <div class="loading-sub" id="loadingSub"></div>
+</div>
+
+<script>
+// ===== DATA =====
+const CATEGORIES={
+  どうぶつ:{label:'🐾 どうぶつ',items:[
+    {name:'いぬ',emoji:'🐕'},{name:'ねこ',emoji:'🐈'},{name:'うさぎ',emoji:'🐇'},
+    {name:'くま',emoji:'🐻'},{name:'きつね',emoji:'🦊'},{name:'たぬき',emoji:'🦡'},
+    {name:'しか',emoji:'🦌'},{name:'ぞう',emoji:'🐘'},{name:'きりん',emoji:'🦒'},
+    {name:'うし',emoji:'🐄'},{name:'うま',emoji:'🐎'},{name:'ひつじ',emoji:'🐑'},
+    {name:'ぶた',emoji:'🐷'},{name:'にわとり',emoji:'🐓'},{name:'かも',emoji:'🦆'},
+    {name:'はと',emoji:'🕊️'},{name:'すずめ',emoji:'🐦'},{name:'かわうそ',emoji:'🦦'},
+    {name:'らくだ',emoji:'🐪'},{name:'さい',emoji:'🦏'},{name:'かば',emoji:'🦛'},
+    {name:'かんがるー',emoji:'🦘'},{name:'こうもり',emoji:'🦇'},{name:'はりねずみ',emoji:'🦔'},
+    {name:'りす',emoji:'🐿️'},{name:'くじら',emoji:'🐋'},{name:'いるか',emoji:'🐬'},
+    {name:'さる',emoji:'🐒'},{name:'とら',emoji:'🐯'},{name:'ライオン',emoji:'🦁'}
+  ]},
+  たべもの:{label:'🍎 たべもの',items:[
+    {name:'りんご',emoji:'🍎'},{name:'いちご',emoji:'🍓'},{name:'ぶどう',emoji:'🍇'},
+    {name:'もも',emoji:'🍑'},{name:'みかん',emoji:'🍊'},{name:'すいか',emoji:'🍉'},
+    {name:'バナナ',emoji:'🍌'},{name:'なし',emoji:'🍐'},{name:'さくらんぼ',emoji:'🍒'},
+    {name:'きうい',emoji:'🥝'},{name:'とまと',emoji:'🍅'},{name:'にんじん',emoji:'🥕'},
+    {name:'きゅうり',emoji:'🥒'},{name:'なす',emoji:'🍆'},{name:'とうもろこし',emoji:'🌽'},
+    {name:'おにぎり',emoji:'🍙'},{name:'ラーメン',emoji:'🍜'},{name:'すし',emoji:'🍣'},
+    {name:'カレー',emoji:'🍛'},{name:'ケーキ',emoji:'🎂'},{name:'アイス',emoji:'🍦'},
+    {name:'ドーナツ',emoji:'🍩'},{name:'ピザ',emoji:'🍕'},{name:'ハンバーガー',emoji:'🍔'},
+    {name:'たこやき',emoji:'🐙'},{name:'うどん',emoji:'🍜'},{name:'そば',emoji:'🍜'},
+    {name:'パン',emoji:'🍞'},{name:'チョコ',emoji:'🍫'},{name:'プリン',emoji:'🍮'}
+  ]},
+  のりもの:{label:'🚗 のりもの',items:[
+    {name:'くるま',emoji:'🚗'},{name:'でんしゃ',emoji:'🚃'},{name:'ひこうき',emoji:'✈️'},
+    {name:'ふね',emoji:'⛵'},{name:'じてんしゃ',emoji:'🚲'},{name:'バス',emoji:'🚌'},
+    {name:'タクシー',emoji:'🚕'},{name:'しょうぼうしゃ',emoji:'🚒'},{name:'きゅうきゅうしゃ',emoji:'🚑'},
+    {name:'けいさつしゃ',emoji:'🚓'},{name:'ロケット',emoji:'🚀'},{name:'ヘリコプター',emoji:'🚁'},
+    {name:'ちかてつ',emoji:'🚇'},{name:'しんかんせん',emoji:'🚄'},{name:'トラック',emoji:'🚚'},
+    {name:'ショベルカー',emoji:'🚧'},{name:'トラクター',emoji:'🚜'},{name:'バイク',emoji:'🏍️'},
+    {name:'スクーター',emoji:'🛵'},{name:'ヨット',emoji:'⛵'},{name:'カヌー',emoji:'🛶'},
+    {name:'ゴンドラ',emoji:'🚡'},{name:'キックボード',emoji:'🛴'},{name:'うちゅうせん',emoji:'🛸'},
+    {name:'ふうせん',emoji:'🎈'},{name:'サンタそり',emoji:'🛷'},{name:'きゅうりゅうかん',emoji:'🛳️'},
+    {name:'ちんちんでんしゃ',emoji:'🚊'},{name:'モノレール',emoji:'🚝'},{name:'ほうせんか',emoji:'🚂'}
+  ]}
+};
+
+const ALL_KANA='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'.split('');
+
+const AWARDS=[
+  {id:'kana10',emoji:'⭐',name:'ひらがなはじめて10もじ',desc:'10もじあつめたよ！',condition:s=>s.totalKana>=10},
+  {id:'kana30',emoji:'🌟',name:'30もじマスター',desc:'30もじもあつめた！すごい！',condition:s=>s.totalKana>=30},
+  {id:'kana46',emoji:'💫',name:'ひらがなぜんぶ！',desc:'ひらがな46もじぜんぶあつめた！かんぺき！',condition:s=>Object.keys(s.myKana).length>=46},
+  {id:'word5',emoji:'📝',name:'ことばはかせ5こ',desc:'5このことばをずかんにとうろく！',condition:s=>s.totalUnlocked>=5},
+  {id:'word15',emoji:'📚',name:'ことばはかせ15こ',desc:'15こもとうろくしたよ！はかせだね！',condition:s=>s.totalUnlocked>=15},
+  {id:'cat_どうぶつ',emoji:'🐾',name:'どうぶつはかせ',desc:'どうぶつずかんをぜんぶうめた！',condition:s=>s.catComplete['どうぶつ']},
+  {id:'cat_たべもの',emoji:'🍎',name:'たべものはかせ',desc:'たべものずかんをぜんぶうめた！',condition:s=>s.catComplete['たべもの']},
+  {id:'cat_のりもの',emoji:'🚗',name:'のりものはかせ',desc:'のりものずかんをぜんぶうめた！',condition:s=>s.catComplete['のりもの']},
+  {id:'allcat',emoji:'🏆',name:'ずかんコンプリート！',desc:'ぜんぶのずかんをうめた！きみはてんさい！',condition:s=>Object.values(s.catComplete).every(v=>v)},
+];
+
+// ===== STATE =====
+let myKana={},unlockedItems=new Set(),currentCategory='どうぶつ',wordSlots=[],earnedAwards=new Set();
+let parentSettings={pin:null,limitEnabled:false,dailyLimitMinutes:30,cameraOff:false};
+let timeState={date:'',playedSeconds:0,extraSeconds:0,sessionStart:null,limitHit:false};
+let pinBuffer='',pinMode='';
+let manualSelected=[];
+
+// ===== LOCALSTORAGE =====
+function saveAll(){
+  try{
+    localStorage.setItem('hzukan_kana',JSON.stringify(myKana));
+    localStorage.setItem('hzukan_unlocked',JSON.stringify([...unlockedItems]));
+    localStorage.setItem('hzukan_awards',JSON.stringify([...earnedAwards]));
+    localStorage.setItem('hzukan_settings',JSON.stringify(parentSettings));
+    localStorage.setItem('hzukan_time',JSON.stringify(timeState));
+  }catch(e){}
+}
+
+// ===== SETUP WIZARD =====
+let setupPin1='',setupPin2='';
+function showSetupWizard(){
+  document.getElementById('setupOverlay').classList.add('show');
+}
+function updateSetupDots1(){
+  for(let i=0;i<4;i++){const d=document.getElementById('sp'+i);if(d){d.classList.toggle('filled',i<setupPin1.length);d.classList.remove('error');}}
+}
+function updateSetupDots2(){
+  for(let i=0;i<4;i++){const d=document.getElementById('sp'+(i+4));if(d){d.classList.toggle('filled',i<setupPin2.length);d.classList.remove('error');}}
+}
+function setupKey(k){
+  if(setupPin1.length>=4) return;
+  setupPin1+=k; updateSetupDots1();
+  if(setupPin1.length===4){
+    setTimeout(()=>{
+      document.getElementById('setupStep1').style.display='none';
+      document.getElementById('setupStep2').style.display='block';
+    },200);
+  }
+}
+function setupDel(){setupPin1=setupPin1.slice(0,-1);updateSetupDots1();}
+function setupKey2(k){
+  if(setupPin2.length>=4) return;
+  setupPin2+=k; updateSetupDots2();
+  if(setupPin2.length===4) setTimeout(confirmSetupPin,100);
+}
+function setupDel2(){setupPin2=setupPin2.slice(0,-1);updateSetupDots2();}
+function confirmSetupPin(){
+  if(setupPin1===setupPin2){
+    parentSettings.pin=setupPin1;
+    saveAll();
+    document.getElementById('setupOverlay').classList.remove('show');
+    initTimeState();updateHeaderCount();
+    renderCategoryTabs();renderZukan();buildManualGrid();renderManualSelected();
+    checkTimeLimit();applyCameraMode();
+    showToast('🔐 PINをせっていしました！');
+  } else {
+    document.getElementById('setupError2').textContent='PINがちがいます。もういちどやりなおしてね';
+    for(let i=0;i<4;i++){const d=document.getElementById('sp'+(i+4));if(d) d.classList.add('error');}
+    setupPin2='';
+    setTimeout(()=>{
+      updateSetupDots2();
+      document.getElementById('setupError2').textContent='';
+      // go back to step 1
+      setupPin1='';setupPin2='';
+      updateSetupDots1();
+      document.getElementById('setupStep2').style.display='none';
+      document.getElementById('setupStep1').style.display='block';
+    },1000);
+  }
+}
+
+// ===== CAMERA MODE =====
+function applyCameraMode(){
+  const off=parentSettings.cameraOff;
+  const section=document.getElementById('cameraSection');
+  const notice=document.getElementById('cameraOffNotice');
+  if(section) section.style.display=off?'none':'block';
+  if(notice) notice.style.display=off?'block':'none';
+}
+function toggleCameraOff(){
+  parentSettings.cameraOff=!parentSettings.cameraOff;
+  const btn=document.getElementById('cameraOffToggle');
+  if(btn) btn.className='toggle-switch'+(parentSettings.cameraOff?' on':'');
+}
+
+// ===== BACKUP / RESTORE =====
+function exportBackup(){
+  const data={
+    version:1,
+    date:new Date().toISOString(),
+    myKana,
+    unlocked:[...unlockedItems],
+    awards:[...earnedAwards],
+    settings:parentSettings,
+    timeState
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=new Date();
+  a.download=`hiragana-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('💾 バックアップをほぞんしました！');
+}
+function importBackup(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  event.target.value='';
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.version||!data.myKana) throw new Error('invalid');
+      myKana=data.myKana||{};
+      unlockedItems=new Set(data.unlocked||[]);
+      earnedAwards=new Set(data.awards||[]);
+      // keep current pin, restore other settings
+      const savedPin=parentSettings.pin;
+      parentSettings={...parentSettings,...(data.settings||{})};
+      parentSettings.pin=savedPin;
+      timeState={...timeState,...(data.timeState||{})};
+      saveAll();
+      updateHeaderCount();renderCollection();renderZukan();renderAwards();renderPalette();
+      closeParentPanel();
+      showToast('✅ データをふっきゅうしました！');
+    }catch{
+      showToast('⚠️ ファイルがよみこめませんでした');
+    }
+  };
+  reader.readAsText(file);
+}
+function loadAll(){
+  try{myKana=JSON.parse(localStorage.getItem('hzukan_kana')||'{}');}catch{}
+  try{unlockedItems=new Set(JSON.parse(localStorage.getItem('hzukan_unlocked')||'[]'));}catch{}
+  try{earnedAwards=new Set(JSON.parse(localStorage.getItem('hzukan_awards')||'[]'));}catch{}
+  try{parentSettings={...parentSettings,...JSON.parse(localStorage.getItem('hzukan_settings')||'{}')};}catch{}
+  try{timeState={...timeState,...JSON.parse(localStorage.getItem('hzukan_time')||'{}')};}catch{}
+}
+
+// ===== TIME =====
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function initTimeState(){
+  const today=todayStr();
+  if(timeState.date!==today){timeState={date:today,playedSeconds:0,extraSeconds:0,sessionStart:null,limitHit:false};saveAll();}
+  timeState.sessionStart=Date.now();
+}
+function getPlayedSeconds(){
+  return (timeState.playedSeconds||0)+(timeState.sessionStart?Math.floor((Date.now()-timeState.sessionStart)/1000):0);
+}
+function saveSessionTime(){timeState.playedSeconds=getPlayedSeconds();timeState.sessionStart=Date.now();saveAll();}
+function getAllowedSeconds(){
+  if(!parentSettings.limitEnabled) return Infinity;
+  return (parentSettings.dailyLimitMinutes*60)+(timeState.extraSeconds||0);
+}
+function checkTimeLimit(){
+  const badge=document.getElementById('timerBadge');
+  const disp=document.getElementById('timerDisplay');
+  if(!parentSettings.limitEnabled){if(disp) disp.textContent='∞';if(badge) badge.classList.remove('warning');return;}
+  const played=getPlayedSeconds(),allowed=getAllowedSeconds(),remaining=allowed-played;
+  const mins=Math.max(0,Math.ceil(remaining/60));
+  if(disp) disp.textContent=remaining<=0?'おわり':`${mins}ふん`;
+  if(badge) badge.classList.toggle('warning',remaining<=120&&remaining>0);
+  if(remaining<=0&&!timeState.limitHit){timeState.limitHit=true;saveSessionTime();showLimitOverlay();}
+}
+function showLimitOverlay(){document.getElementById('limitOverlay').classList.add('show');}
+function hideLimitOverlay(){document.getElementById('limitOverlay').classList.remove('show');}
+function onTimerBadgeClick(){if(parentSettings.limitEnabled) requestUnlock();}
+function requestUnlock(){openPinModal('unlock','⏰ もうすこしあそぶ','PINをいれてから、ついかじかんをえらんでね',true);}
+setInterval(()=>{checkTimeLimit();if(document.getElementById('parentOverlay').classList.contains('show')) updateParentStats();},5000);
+
+// ===== PIN =====
+function openPinModal(mode,title,sub,showExtra=false){
+  pinMode=mode;pinBuffer='';
+  document.getElementById('pinTitle').textContent=title;
+  document.getElementById('pinSub').textContent=sub;
+  document.getElementById('pinError').textContent='';
+  document.getElementById('extraTimeBox').style.display=showExtra?'block':'none';
+  updatePinDots();
+  document.getElementById('pinOverlay').classList.add('show');
+}
+function closePinModal(){document.getElementById('pinOverlay').classList.remove('show');pinBuffer='';pinMode='';}
+function pinKey(k){if(pinBuffer.length>=4)return;pinBuffer+=k;updatePinDots();if(pinBuffer.length===4)setTimeout(verifyPin,100);}
+function pinDel(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();document.getElementById('pinError').textContent='';}
+function updatePinDots(){
+  for(let i=0;i<4;i++){const d=document.getElementById('pd'+i);d.classList.toggle('filled',i<pinBuffer.length);d.classList.remove('error');}
+}
+function verifyPin(){
+  if(pinBuffer===parentSettings.pin){
+    closePinModal();
+    if(pinMode==='parent') showParentPanel();
+    else if(pinMode==='unlock'){
+      const extra=parseInt(document.getElementById('extraTimeInput').value)||15;
+      timeState.extraSeconds=(timeState.extraSeconds||0)+(extra*60);
+      timeState.limitHit=false;saveAll();hideLimitOverlay();showToast(`⏰ ${extra}ふんついかしたよ！`);
+    }
+  } else {
+    document.getElementById('pinError').textContent='PINがちがいます';
+    document.querySelectorAll('.pin-dot').forEach(d=>d.classList.add('error'));
+    pinBuffer='';
+    setTimeout(()=>{document.querySelectorAll('.pin-dot').forEach(d=>{d.classList.remove('error','filled');});document.getElementById('pinError').textContent='';},800);
+  }
+}
+
+// ===== PARENT =====
+function openParentMode(){openPinModal('parent','⚙️ おやモード','PINをにゅうりょくしてください');}
+function showParentPanel(){
+  const lt=document.getElementById('limitToggle');
+  if(lt) lt.className='toggle-switch'+(parentSettings.limitEnabled?' on':'');
+  const ct=document.getElementById('cameraOffToggle');
+  if(ct) ct.className='toggle-switch'+(parentSettings.cameraOff?' on':'');
+  const dl=document.getElementById('dailyLimitInput');
+  if(dl) dl.value=parentSettings.dailyLimitMinutes;
+  updateParentStats();
+  document.getElementById('parentOverlay').classList.add('show');
+}
+function closeParentPanel(){document.getElementById('parentOverlay').classList.remove('show');}
+function toggleLimit(){parentSettings.limitEnabled=!parentSettings.limitEnabled;document.getElementById('limitToggle').className='toggle-switch'+(parentSettings.limitEnabled?' on':'');}
+function updateParentStats(){
+  const played=getPlayedSeconds(),allowed=getAllowedSeconds();
+  document.getElementById('todayPlayTime').textContent=Math.floor(played/60)+'ふん';
+  document.getElementById('remainingTime').textContent=parentSettings.limitEnabled?Math.floor(Math.max(0,allowed-played)/60)+'ふん':'せいげんなし';
+}
+function saveParentSettings(){
+  const dl=document.getElementById('dailyLimitInput');
+  if(dl) parentSettings.dailyLimitMinutes=parseInt(dl.value)||30;
+  saveAll();closeParentPanel();showToast('💾 せっていをほぞんしました！');
+  checkTimeLimit();applyCameraMode();
+}
+function saveNewPin(){
+  const v=document.getElementById('newPinInput').value.replace(/\D/g,'');
+  if(v.length!==4){showToast('⚠️ 4けたのすうじをいれてね');return;}
+  parentSettings.pin=v;document.getElementById('newPinInput').value='';saveAll();showToast('🔐 PINをかえました！');
+}
+
+// ===== TABS =====
+function switchTab(tab){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  if(tab==='collection') renderCollection();
+  if(tab==='word') renderPalette();
+  if(tab==='zukan') renderZukan();
+  if(tab==='awards') renderAwards();
+}
+
+// ===== OCR WITH TESSERACT =====
+let selectedImageDataUrl=null;
+
+function handleFileSelect(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  e.target.value='';
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    selectedImageDataUrl=ev.target.result;
+    const img=document.getElementById('previewImg');
+    img.src=ev.target.result;
+    img.style.display='block';
+    showToast('📷 しゃしんをよみこみました！');
+    // Hide previous results
+    document.getElementById('resultBox').style.display='none';
+    document.getElementById('ocrStatus').classList.remove('show');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeImage(){
+  if(!selectedImageDataUrl){showToast('📷 さきにしゃしんをえらんでね！');return;}
+
+  // Show OCR status bar
+  const statusBox=document.getElementById('ocrStatus');
+  const statusText=document.getElementById('ocrStatusText');
+  const progressFill=document.getElementById('ocrProgressFill');
+  statusBox.classList.add('show');
+  statusText.textContent='Tesseractをよみこみちゅう…';
+  progressFill.style.width='0%';
+
+  try{
+    const worker=await Tesseract.createWorker('jpn',1,{
+      logger:m=>{
+        if(m.status==='recognizing text'){
+          const pct=Math.round(m.progress*100);
+          progressFill.style.width=pct+'%';
+          statusText.textContent=`よみとっています… ${pct}%`;
+        } else {
+          statusText.textContent=m.status==='loading language traineddata'?'にほんごデータをよみこみちゅう…':
+            m.status==='initializing api'?'じゅんびちゅう…':m.status;
+        }
+      }
+    });
+
+    const {data:{text}}=await worker.recognize(selectedImageDataUrl);
+    await worker.terminate();
+
+    // Extract hiragana only
+    const found=[...text].filter(c=>ALL_KANA.includes(c));
+    // Deduplicate while keeping order
+    const unique=[...new Set(found)];
+
+    statusBox.classList.remove('show');
+
+    if(unique.length>0){
+      showFoundKana(unique);
+      showToast(`✅ ${unique.length}もじみつけたよ！`);
+    } else {
+      showToast('🔍 ひらがながみつからなかった。てでえらんでみてね！');
+    }
+  }catch(err){
+    statusBox.classList.remove('show');
+    showToast('⚠️ よみとりにしっぱい。てでえらんでね！');
+    console.error(err);
+  }
+}
+
+function showFoundKana(arr){
+  const box=document.getElementById('resultBox');
+  const cont=document.getElementById('foundKana');
+  box.style.display='block';cont.innerHTML='';
+  const filtered=arr.filter(k=>ALL_KANA.includes(k));
+  filtered.forEach((k,i)=>{
+    const c=document.createElement('div');
+    c.className='kana-chip';c.textContent=k;
+    c.style.animationDelay=`${i*0.07}s`;
+    // Toggle remove on tap
+    c.onclick=()=>{c.style.opacity=c.style.opacity==='0.3'?'1':'0.3';c.dataset.skip=c.dataset.skip==='1'?'':'1';};
+    cont.appendChild(c);
+  });
+  box.dataset.kana=JSON.stringify(filtered);
+}
+function addFoundKana(){
+  const all=JSON.parse(document.getElementById('resultBox').dataset.kana||'[]');
+  // Filter out ones tapped to skip
+  const chips=document.querySelectorAll('#foundKana .kana-chip');
+  const add=[];
+  chips.forEach((c,i)=>{if(c.dataset.skip!=='1') add.push(all[i]);});
+  if(add.length===0){showToast('ひらがなをえらんでね！');return;}
+  add.forEach(k=>{myKana[k]=(myKana[k]||0)+1;});
+  updateHeaderCount();document.getElementById('resultBox').style.display='none';
+  checkAwards();saveAll();sparkle();showToast(`✅ ${add.length}もじをてもちにくわえた！`);
+}
+
+// ===== MANUAL KANA ADD =====
+function buildManualGrid(){
+  const grid=document.getElementById('manualKanaGrid');
+  grid.innerHTML='';
+  ALL_KANA.forEach(k=>{
+    const b=document.createElement('button');
+    b.className='mkb';b.textContent=k;b.dataset.k=k;
+    b.onclick=()=>manualTap(b);
+    grid.appendChild(b);
+  });
+}
+function manualTap(btn){
+  const k=btn.dataset.k;
+  manualSelected.push(k);
+  renderManualSelected();
+}
+function renderManualSelected(){
+  const area=document.getElementById('manualSelected');
+  if(!area) return;
+  area.innerHTML='';
+  if(manualSelected.length===0){
+    const hint=document.createElement('span');
+    hint.id='manualEmptyHint';
+    hint.className='manual-empty-hint';
+    hint.textContent='したのボタンでひらがなをえらぼう';
+    area.appendChild(hint);
+    return;
+  }
+  manualSelected.forEach((k,i)=>{
+    const c=document.createElement('button');
+    c.className='msc';c.textContent=k;
+    c.onclick=()=>{manualSelected.splice(i,1);renderManualSelected();};
+    area.appendChild(c);
+  });
+}
+function addManualKana(){
+  if(manualSelected.length===0){showToast('ひらがなをえらんでね！');return;}
+  manualSelected.forEach(k=>{myKana[k]=(myKana[k]||0)+1;});
+  updateHeaderCount();checkAwards();saveAll();sparkle();
+  showToast(`✅ ${manualSelected.length}もじをてもちにくわえた！`);
+  manualSelected=[];renderManualSelected();
+}
+function clearManual(){manualSelected=[];renderManualSelected();}
+
+// ===== COLLECTION =====
+function renderCollection(){
+  const grid=document.getElementById('collectionGrid');
+  const empty=document.getElementById('emptyCollection');
+  const keys=Object.keys(myKana);
+  grid.innerHTML='';
+  if(keys.length===0){empty.style.display='block';return;}
+  empty.style.display='none';
+  keys.sort().forEach(k=>{
+    const c=document.createElement('div');c.className='coll-chip';c.textContent=k;
+    if(myKana[k]>1){const b=document.createElement('div');b.className='count-badge';b.textContent=myKana[k];c.appendChild(b);}
+    grid.appendChild(c);
+  });
+}
+
+// ===== WORD =====
+function renderPalette(){
+  const grid=document.getElementById('paletteGrid');
+  const empty=document.getElementById('emptyPalette');
+  grid.innerHTML='';
+  const keys=Object.keys(myKana);
+  if(keys.length===0){empty.style.display='block';return;}
+  empty.style.display='none';
+  keys.sort().forEach(k=>{
+    for(let i=0;i<myKana[k];i++){
+      const c=document.createElement('div');c.className='palette-chip';c.textContent=k;
+      c.dataset.kana=k;c.dataset.idx=i;c.onclick=()=>addToWord(c);
+      grid.appendChild(c);
+    }
+  });
+  syncUsedChips();
+}
+function addToWord(chip){if(chip.classList.contains('used'))return;wordSlots.push(chip.dataset.kana);renderWordArea();syncUsedChips();}
+function renderWordArea(){
+  const area=document.getElementById('wordArea');
+  area.classList.toggle('empty',wordSlots.length===0);area.innerHTML='';
+  wordSlots.forEach((k,i)=>{const s=document.createElement('div');s.className='word-slot';s.textContent=k;s.onclick=()=>removeFromWord(i);area.appendChild(s);});
+}
+function removeFromWord(idx){wordSlots.splice(idx,1);renderWordArea();syncUsedChips();}
+function syncUsedChips(){
+  const uc={};wordSlots.forEach(k=>uc[k]=(uc[k]||0)+1);
+  document.querySelectorAll('.palette-chip').forEach(c=>c.classList.toggle('used',parseInt(c.dataset.idx)<(uc[c.dataset.kana]||0)));
+}
+function clearWord(){wordSlots=[];renderWordArea();syncUsedChips();document.getElementById('hintBox').style.display='none';}
+function checkWord(){
+  if(wordSlots.length===0){showToast('📝 ことばをつくってからおしてね！');return;}
+  const word=wordSlots.join('');
+  let found=null;
+  for(const[cat,data]of Object.entries(CATEGORIES)){
+    const idx=data.items.findIndex(item=>item.name===word);
+    if(idx!==-1){found={cat,idx,item:data.items[idx]};break;}
+  }
+  if(found){
+    const key=`${found.cat}:${found.idx}`;
+    const isNew=!unlockedItems.has(key);
+    unlockedItems.add(key);saveAll();checkAwards();
+    if(isNew){playGetJingle();sparkle();sparkle();showModal(found.item.emoji,`「${word}」かいほう！`,`${found.item.emoji} がずかんにとうろくされました！`);}
+    else showModal('✅',`「${word}」はもうずかんにある！`,'べつのことばをさがしてみよう！');
+    renderZukan();
+  } else {
+    const hint=document.getElementById('hintBox');
+    hint.style.display='flex';
+    document.getElementById('hintText').textContent=`「${word}」はずかんにないことば。ならびをかえてみてね！`;
+    showToast(`🤔「${word}」はずかんにないみたい`);
+  }
+}
+
+// ===== ZUKAN =====
+function renderCategoryTabs(){
+  const el=document.getElementById('categoryTabs');el.innerHTML='';
+  Object.keys(CATEGORIES).forEach(cat=>{
+    const b=document.createElement('button');b.className='cat-btn'+(cat===currentCategory?' active':'');
+    b.textContent=CATEGORIES[cat].label;b.onclick=()=>{currentCategory=cat;renderZukan();};
+    el.appendChild(b);
+  });
+}
+function renderZukan(){
+  renderCategoryTabs();
+  const data=CATEGORIES[currentCategory];
+  const grid=document.getElementById('zukanGrid');grid.innerHTML='';
+  let unlocked=0;
+  data.items.forEach((item,idx)=>{
+    const key=`${currentCategory}:${idx}`;
+    const isUnlocked=unlockedItems.has(key);
+    if(isUnlocked) unlocked++;
+    const card=document.createElement('div');
+    card.className='zukan-card'+(isUnlocked?'':' locked');
+    card.innerHTML=`<div class="zukan-img">${item.emoji}<div class="lock-overlay">🔒</div></div><div class="zukan-name">${isUnlocked?item.name:'？？？'}</div>`;
+    if(isUnlocked) card.onclick=()=>showModal(item.emoji,item.name,`「${item.name}」をみつけた！`);
+    grid.appendChild(card);
+  });
+  const pct=Math.round(unlocked/data.items.length*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=`${unlocked} / ${data.items.length} かいほう`;
+}
+
+// ===== AWARDS =====
+function getAwardState(){
+  const catComplete={};
+  Object.keys(CATEGORIES).forEach(cat=>{
+    catComplete[cat]=CATEGORIES[cat].items.every((_,i)=>unlockedItems.has(`${cat}:${i}`));
+  });
+  return{myKana,totalKana:Object.values(myKana).reduce((a,b)=>a+b,0),totalUnlocked:[...unlockedItems].length,catComplete};
+}
+function checkAwards(){
+  const state=getAwardState();let newOnes=[];
+  AWARDS.forEach(a=>{if(!earnedAwards.has(a.id)&&a.condition(state)){earnedAwards.add(a.id);newOnes.push(a);}});
+  if(newOnes.length>0){saveAll();setTimeout(()=>showCertificate(newOnes[0]),600);}
+}
+function renderAwards(){
+  const grid=document.getElementById('awardsGrid');grid.innerHTML='';
+  AWARDS.forEach(a=>{
+    const earned=earnedAwards.has(a.id);
+    const card=document.createElement('div');
+    card.className='award-card'+(earned?' unlocked':' locked');
+    card.innerHTML=`<span class="award-emoji">${earned?a.emoji:'🔒'}</span><div class="award-title">${earned?a.name:'？？？'}</div><div class="award-desc">${earned?a.desc:'まだひみつ'}</div>${earned?'<div class="award-ribbon">かくとく！</div>':''}`;
+    if(earned) card.onclick=()=>showCertificate(a);
+    grid.appendChild(card);
+  });
+}
+function showCertificate(award){
+  const d=new Date();
+  document.getElementById('certEmoji').textContent=award.emoji;
+  document.getElementById('certName').textContent=award.name;
+  document.getElementById('certBody').textContent=award.desc+'\nよくがんばりました！';
+  document.getElementById('certDate').textContent=`${d.getFullYear()}ねん${d.getMonth()+1}がつ${d.getDate()}にち かくとく`;
+  document.getElementById('certOverlay').classList.add('show');
+  sparkle();sparkle();
+}
+function closeCert(){document.getElementById('certOverlay').classList.remove('show');}
+
+// ===== UTILS =====
+function updateHeaderCount(){document.getElementById('totalCount').textContent=Object.values(myKana).reduce((a,b)=>a+b,0);}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function showModal(emoji,title,desc){
+  document.getElementById('modalEmoji').textContent=emoji;
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalDesc').textContent=desc;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
+function showLoading(text,sub=''){
+  const o=document.getElementById('loadingOverlay');
+  const t=document.getElementById('loadingText');
+  const s=document.getElementById('loadingSub');
+  if(t) t.textContent=text;
+  if(s) s.textContent=sub;
+  if(o) o.classList.add('show');
+}
+function hideLoading(){
+  const o=document.getElementById('loadingOverlay');
+  if(o) o.classList.remove('show');
+}
+function sparkle(){
+  const emojis=['⭐','✨','🌟','💫','🎉','🎊'];
+  for(let i=0;i<6;i++){setTimeout(()=>{
+    const el=document.createElement('div');el.className='sparkle';
+    el.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.left=Math.random()*80+10+'%';el.style.top=Math.random()*60+20+'%';
+    document.body.appendChild(el);setTimeout(()=>el.remove(),1000);
+  },i*80);}
+}
+
+// ===== INIT =====
+
+// ===== AUDIO =====
+let getJingleAudio = null;
+function initAudio(){
+  getJingleAudio = new Audio('get_jingle.wav');
+  getJingleAudio.preload = 'auto';
+}
+
+let bgmAudio = null;
+let bgmEnabled = true;
+
+function initBGM(){
+  bgmAudio = new Audio('main_theme.wav');
+  bgmAudio.loop = true;
+  bgmAudio.volume = 0.35;
+  bgmAudio.preload = 'auto';
+}
+
+function startBGM(){
+  if(!bgmAudio || !bgmEnabled) return;
+  bgmAudio.play().catch(()=>{});
+}
+
+function stopBGM(){
+  if(!bgmAudio) return;
+  bgmAudio.pause();
+  bgmAudio.currentTime = 0;
+}
+
+function toggleBGM(){
+  bgmEnabled = !bgmEnabled;
+  const btn = document.getElementById('bgmBtn');
+  if(bgmEnabled){
+    startBGM();
+    if(btn) btn.textContent = '🔊';
+  } else {
+    if(bgmAudio) bgmAudio.pause();
+    if(btn) btn.textContent = '🔇';
+  }
+}
+
+function playGetJingle(){
+  if(!getJingleAudio) return;
+  getJingleAudio.currentTime = 0;
+  getJingleAudio.play().catch(()=>{});
+}
+
+function init(){
+  initAudio();initBGM();loadAll();
+  if(!parentSettings.pin){
+    showSetupWizard();
+  } else {
+    initTimeState();updateHeaderCount();
+    renderCategoryTabs();renderZukan();buildManualGrid();renderManualSelected();
+    checkTimeLimit();applyCameraMode();
+  }
+  setInterval(saveSessionTime,30000);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden) saveSessionTime();});
+}
+init();
+
+// Start BGM on first tap (browser autoplay policy)
+document.addEventListener('click', function startBGMOnce(){
+  startBGM();
+  document.removeEventListener('click', startBGMOnce);
+}, {once: true});
+
+</script>
+</body>
+</html>
