@@ -58,7 +58,7 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 .camera-layout{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
 .camera-left{flex:1;min-width:0;}
 .camera-right{flex:0 0 auto;max-width:55%;}
-.preview-img-small{width:100%;border-radius:12px;max-height:280px;object-fit:contain;display:none;background:#f0f0f0;border:2px solid #eee;margin-bottom:6px;}
+.preview-img-small{width:100%;border-radius:12px;max-height:220px;object-fit:contain;display:none;background:#f0f0f0;border:2px solid #eee;margin-bottom:8px;}
 .mkb.empty-cell{background:transparent !important;border:none !important;cursor:default;pointer-events:none;}
 
 
@@ -248,8 +248,8 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 
 <!-- CAMERA -->
 <div id="screen-camera" class="screen active">
-  <div class="section-title">📷 ひらがなをさつえい</div>
 
+  <!-- カメラオフ時 -->
   <div id="cameraOffNotice" style="display:none;background:linear-gradient(135deg,#FFF3CD,#FFE082);border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;">
     <div style="font-size:28px;margin-bottom:6px;">🎲</div>
     <div style="font-size:14px;font-weight:900;color:#856404;">ランダムモードでひらがなをあつめよう！</div>
@@ -257,51 +257,50 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
   </div>
 
   <div id="cameraSection">
-    <!-- 撮影ボタン -->
-    <div class="capture-btns">
-      <label class="capture-btn cam" id="camLabel">
+    <!-- ① カメラ＋よみとるボタン（横並び） -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <label class="capture-btn cam" style="flex:1;padding:12px 6px;">
         <input type="file" id="cameraInput" accept="image/*" capture onchange="handleFileSelect(event)">
-        <span class="btn-big-icon">📷</span>カメラをひらく
+        <span style="font-size:24px;">📷</span>
+        <span style="font-size:12px;">カメラ</span>
       </label>
-      <label class="capture-btn file">
-        <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
-        <span class="btn-big-icon">🖼️</span>がぞうをえらぶ
-      </label>
+      <button class="capture-btn" onclick="analyzeImage()"
+        style="flex:1;padding:12px 6px;background:linear-gradient(135deg,var(--grass),#4DB86A);color:white;box-shadow:0 4px 0 #3A9A54;border:none;">
+        <span style="font-size:24px;">🔍</span>
+        <span style="font-size:12px;">よみとる</span>
+      </button>
     </div>
 
-    <!-- 左：画像＋読み取り / 右：あいうえお表 -->
-    <div class="camera-layout">
-      <!-- 左カラム: 画像プレビュー＋OCR -->
-      <div class="camera-left">
-        <img class="preview-img-small" id="previewImg" alt="">
-        <div class="ocr-status-box" id="ocrStatus">
-          <span id="ocrStatusText">よみとっています…</span>
-          <div class="ocr-progress"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
-        </div>
-        <button class="btn-primary" style="font-size:14px;padding:11px" onclick="analyzeImage()">🔍 よみとる！</button>
-        <div class="result-box" id="resultBox">
-          <h3>📝 みつかったひらがな</h3>
-          <div class="kana-chips" id="foundKana"></div>
-          <button class="btn-green" style="margin-top:10px;font-size:12px;padding:10px" onclick="addFoundKana()">➕ くわえる！</button>
-        </div>
-      </div>
+    <!-- OCRプログレス -->
+    <div class="ocr-status-box" id="ocrStatus">
+      <span id="ocrStatusText">よみとっています…</span>
+      <div class="ocr-progress"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
+    </div>
 
-      <!-- 右カラム: あいうえお表 -->
-      <div class="camera-right">
-        <div class="manual-box" style="margin-top:0;padding:10px;">
-          <h3>👆 みつけたひらがなをおしてね。</h3>
-          <div class="manual-selected-area" id="manualSelected"></div>
-          <div id="manualKanaGrid"></div>
-          <div class="manual-actions" style="margin-top:6px;">
-            <button class="btn-green" onclick="addManualKana()">➕ くわえる</button>
-            <button class="btn-secondary" onclick="clearManual()">🗑️</button>
-          </div>
-        </div>
+    <!-- ② 撮影後の画像（あれば表示） -->
+    <img class="preview-img-small" id="previewImg" alt="">
+
+    <!-- ③ 読み取り結果チップ -->
+    <div class="result-box" id="resultBox">
+      <h3>📝 みつかったひらがな（おして はずせるよ）</h3>
+      <div class="kana-chips" id="foundKana"></div>
+      <button class="btn-green" style="margin-top:10px;font-size:13px;padding:10px" onclick="addFoundKana()">➕ てもちにくわえる！</button>
+    </div>
+
+    <!-- ④ ひらがな表（全幅） -->
+    <div style="background:white;border-radius:16px;padding:12px;margin-top:10px;box-shadow:var(--shadow);">
+      <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">👆 よみとったひらがなをえらんでね！</div>
+      <div class="manual-selected-area" id="manualSelected"></div>
+      <div id="manualKanaGrid"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn-green" style="margin:0;flex:2;font-size:13px;padding:10px;" onclick="addManualKana()">➕ てもちにくわえる</button>
+        <button class="btn-secondary" style="margin:0;flex:1;font-size:13px;padding:10px;" onclick="clearManual()">🗑️ けす</button>
       </div>
     </div>
   </div>
 
-  <button class="btn-secondary" style="margin-top:8px" onclick="addDemoKana()">🎲 ランダムにもらう</button>
+  <!-- ランダム -->
+  <button class="btn-secondary" style="margin-top:10px" onclick="addDemoKana()">🎲 ランダムにもらう</button>
 </div>
 
 <!-- COLLECTION -->
@@ -849,7 +848,7 @@ function handleFileSelect(e){
   reader.onload=(ev)=>{
     selectedImageDataUrl=ev.target.result;
     const img=document.getElementById('previewImg');
-    if(img){img.src=ev.target.result;img.style.display='block';img.style.maxHeight='300px';}
+    if(img){img.src=ev.target.result;img.style.display='block';}
     showToast('📷 しゃしんをよみこみました！');
     const rb=document.getElementById('resultBox');
     if(rb) rb.style.display='none';
@@ -857,6 +856,18 @@ function handleFileSelect(e){
     if(os) os.classList.remove('show');
   };
   reader.readAsDataURL(file);
+}
+
+function getRandomKana(n){
+  const r=[];
+  for(let i=0;i<n;i++) r.push(ALL_KANA[Math.floor(Math.random()*ALL_KANA.length)]);
+  return r;
+}
+
+function addDemoKana(){
+  const kana=getRandomKana(Math.floor(Math.random()*4)+3);
+  showFoundKana(kana);
+  showToast('🎲 ひらがながとびでてきた！');
 }
 
 // 画像前処理: グレースケール＋コントラスト強化
@@ -981,7 +992,7 @@ function buildManualGrid(){
   // 列（右→左）: わ ら や ま は な た さ か あ（+ん列）
   // 行（上→下）: あ い う え お
   // direction:rtl で右から左に列を並べる
-  grid.style.cssText='display:grid;grid-template-rows:repeat(5,auto);grid-auto-flow:column;gap:3px;margin-bottom:8px;direction:rtl;width:100%;';
+  grid.style.cssText='display:grid;grid-template-rows:repeat(5,1fr);grid-auto-flow:column;gap:4px;margin-bottom:0;direction:rtl;width:100%;';
   const TABLE_V=[
     // あ列（右端）
     'あ','い','う','え','お',
