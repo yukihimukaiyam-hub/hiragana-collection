@@ -399,68 +399,70 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
   </div>
 </div>
 
-<!-- PARENT PANEL -->
-<div class="modal-overlay" id="parentOverlay">
-  <div class="pin-modal" style="max-width:380px;max-height:90vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div class="pin-title" style="margin:0">⚙️ おやモード</div>
-      <button onclick="closeParentPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;">✕</button>
+<!-- PARENT SCREEN -->
+<div id="screen-parent" class="screen">
+  <div class="section-title">⚙️ おやモード</div>
+
+  <div class="parent-panel">
+    <h3>⏱️ じかんせいげん</h3>
+    <div class="setting-row">
+      <div><div class="setting-label">じかんせいげん</div><div class="setting-sub">オン/オフ</div></div>
+      <button class="toggle-switch" id="limitToggle" onclick="toggleLimit()"></button>
     </div>
-    <div class="parent-panel">
-      <h3>⏱️ じかんせいげん</h3>
-      <div class="setting-row">
-        <div><div class="setting-label">じかんせいげん</div><div class="setting-sub">オン/オフ</div></div>
-        <button class="toggle-switch" id="limitToggle" onclick="toggleLimit()"></button>
-      </div>
-      <div class="setting-row">
-        <div><div class="setting-label">いちにちのじかん</div><div class="setting-sub">ふん</div></div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" class="num-input" id="dailyLimitInput" min="5" max="240" value="30">
-          <span style="font-size:11px;color:#888;">ふん</span>
-        </div>
+    <div class="setting-row">
+      <div><div class="setting-label">いちにちのじかん</div><div class="setting-sub">ふん</div></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" class="num-input" id="dailyLimitInput" min="5" max="240" value="30">
+        <span style="font-size:11px;color:#888;">ふん</span>
       </div>
     </div>
-    <div class="parent-panel">
-      <h3>📷 カメラせってい</h3>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">カメラオフモード</div>
-          <div class="setting-sub">オンにするとランダムのみで遊べる</div>
-        </div>
-        <button class="toggle-switch" id="cameraOffToggle" onclick="toggleCameraOff()"></button>
-      </div>
-    </div>
-    <div class="parent-panel">
-      <h3>🔐 PINのへんこう</h3>
-      <div style="font-size:11px;color:#888;margin-bottom:8px;">4けたのすうじ</div>
-      <div class="pin-change-row">
-        <input type="password" class="pin-change-input" id="newPinInput" maxlength="4" inputmode="numeric" placeholder="----">
-        <button class="pin-save-btn" onclick="saveNewPin()">保存</button>
-      </div>
-    </div>
-    <div class="parent-panel">
-      <h3>📊 きょうのきろく</h3>
-      <div class="setting-row">
-        <div class="setting-label">プレイじかん</div>
-        <div style="font-size:15px;font-weight:900;color:var(--sky)" id="todayPlayTime">0ふん</div>
-      </div>
-      <div class="setting-row">
-        <div class="setting-label">のこりじかん</div>
-        <div style="font-size:15px;font-weight:900;color:var(--grass)" id="remainingTime">--</div>
-      </div>
-    </div>
-    <div class="parent-panel">
-      <h3>💾 データバックアップ</h3>
-      <div style="font-size:11px;color:#888;margin-bottom:10px;">きろくをファイルにほぞん・ふっきゅうできます</div>
-      <div style="display:flex;gap:8px;">
-        <button class="pin-save-btn" style="flex:1;padding:10px;font-size:12px;background:var(--sky)" onclick="exportBackup()">⬇️ バックアップ</button>
-        <label class="pin-save-btn" style="flex:1;padding:10px;font-size:12px;background:var(--grass);cursor:pointer;text-align:center;">
-          ⬆️ ふっきゅう<input type="file" accept=".json" style="display:none" onchange="importBackup(event)">
-        </label>
-      </div>
-    </div>
-    <button class="save-btn" onclick="saveParentSettings()">💾 ほぞん</button>
   </div>
+
+  <div class="parent-panel">
+    <h3>📷 カメラせってい</h3>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">カメラオフモード</div>
+        <div class="setting-sub">オンにするとランダムのみで遊べる</div>
+      </div>
+      <button class="toggle-switch" id="cameraOffToggle" onclick="toggleCameraOff()"></button>
+    </div>
+  </div>
+
+  <div class="parent-panel">
+    <h3>🔐 PINのへんこう</h3>
+    <div style="font-size:11px;color:#888;margin-bottom:8px;">4けたのすうじをにゅうりょく</div>
+    <div class="pin-change-row">
+      <input type="password" class="pin-change-input" id="newPinInput" maxlength="4" inputmode="numeric" placeholder="----">
+      <button class="pin-save-btn" onclick="saveNewPin()">保存</button>
+    </div>
+  </div>
+
+  <div class="parent-panel">
+    <h3>📊 きょうのきろく</h3>
+    <div class="setting-row">
+      <div class="setting-label">プレイじかん</div>
+      <div style="font-size:15px;font-weight:900;color:var(--sky)" id="todayPlayTime">0ふん</div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">のこりじかん</div>
+      <div style="font-size:15px;font-weight:900;color:var(--grass)" id="remainingTime">--</div>
+    </div>
+  </div>
+
+  <div class="parent-panel">
+    <h3>💾 データバックアップ</h3>
+    <div style="font-size:11px;color:#888;margin-bottom:10px;">きろくをファイルにほぞん・ふっきゅうできます</div>
+    <div style="display:flex;gap:8px;">
+      <button class="pin-save-btn" style="flex:1;padding:12px;font-size:13px;background:var(--sky)" onclick="exportBackup()">⬇️ バックアップ</button>
+      <label class="pin-save-btn" style="flex:1;padding:12px;font-size:13px;background:var(--grass);cursor:pointer;text-align:center;">
+        ⬆️ ふっきゅう<input type="file" accept=".json" style="display:none" onchange="importBackup(event)">
+      </label>
+    </div>
+  </div>
+
+  <button class="save-btn" onclick="saveParentSettings()">💾 せっていをほぞん</button>
+  <button class="btn-secondary" style="margin-top:10px" onclick="switchTab('camera')">← こどもがめんにもどる</button>
 </div>
 
 <!-- LIMIT OVERLAY -->
@@ -714,7 +716,6 @@ function importBackup(event){
       timeState={...timeState,...(data.timeState||{})};
       saveAll();
       updateHeaderCount();renderCollection();renderZukan();renderAwards();renderPalette();
-      closeParentPanel();
       showToast('✅ データをふっきゅうしました！');
     }catch{
       showToast('⚠️ ファイルがよみこめませんでした');
@@ -804,9 +805,9 @@ function showParentPanel(){
   const dl=document.getElementById('dailyLimitInput');
   if(dl) dl.value=parentSettings.dailyLimitMinutes;
   updateParentStats();
-  document.getElementById('parentOverlay').classList.add('show');
+  switchTab('parent');
 }
-function closeParentPanel(){document.getElementById('parentOverlay').classList.remove('show');}
+function closeParentPanel(){switchTab('camera');}
 function toggleLimit(){parentSettings.limitEnabled=!parentSettings.limitEnabled;document.getElementById('limitToggle').className='toggle-switch'+(parentSettings.limitEnabled?' on':'');}
 function updateParentStats(){
   const played=getPlayedSeconds(),allowed=getAllowedSeconds();
@@ -816,7 +817,7 @@ function updateParentStats(){
 function saveParentSettings(){
   const dl=document.getElementById('dailyLimitInput');
   if(dl) parentSettings.dailyLimitMinutes=parseInt(dl.value)||30;
-  saveAll();closeParentPanel();showToast('💾 せっていをほぞんしました！');
+  saveAll();showToast('💾 せっていをほぞんしました！');
   checkTimeLimit();applyCameraMode();
 }
 function saveNewPin(){
@@ -829,12 +830,15 @@ function saveNewPin(){
 function switchTab(tab){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('screen-'+tab).classList.add('active');
-  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  const screen=document.getElementById('screen-'+tab);
+  if(screen) screen.classList.add('active');
+  const btn=document.querySelector(`[data-tab="${tab}"]`);
+  if(btn) btn.classList.add('active');
   if(tab==='collection') renderCollection();
   if(tab==='word') renderPalette();
   if(tab==='zukan') renderZukan();
   if(tab==='awards') renderAwards();
+  if(tab==='parent') updateParentStats();
 }
 
 // ===== OCR WITH TESSERACT =====
