@@ -54,6 +54,13 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 .capture-btn.file{background:linear-gradient(135deg,var(--sky),var(--lavender));color:white;box-shadow:0 4px 0 rgba(91,200,245,0.6);}
 .capture-btn input{display:none;}
 .preview-img{width:100%;border-radius:16px;max-height:200px;object-fit:contain;display:none;margin-bottom:10px;background:#f8f8f8;border:3px solid #eee;}
+/* CAMERA LAYOUT */
+.camera-layout{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.camera-left{flex:1;min-width:0;}
+.camera-right{flex:0 0 auto;max-width:55%;}
+.preview-img-small{width:100%;border-radius:12px;max-height:280px;object-fit:contain;display:none;background:#f0f0f0;border:2px solid #eee;margin-bottom:6px;}
+.mkb.empty-cell{background:transparent !important;border:none !important;cursor:default;pointer-events:none;}
+
 
 /* OCR STATUS */
 .ocr-status-box{background:#f0faff;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--sky);display:none;align-items:center;gap:8px;margin-bottom:10px;border:2px solid #d0eeff;}
@@ -250,6 +257,7 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
   </div>
 
   <div id="cameraSection">
+    <!-- 撮影ボタン -->
     <div class="capture-btns">
       <label class="capture-btn cam" id="camLabel">
         <input type="file" id="cameraInput" accept="image/*" capture onchange="handleFileSelect(event)">
@@ -260,29 +268,40 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
         <span class="btn-big-icon">🖼️</span>がぞうをえらぶ
       </label>
     </div>
-    <img class="preview-img" id="previewImg" alt="">
-    <div class="ocr-status-box" id="ocrStatus">
-      <span id="ocrStatusText">よみとっています…</span>
-      <div class="ocr-progress"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
-    </div>
-    <button class="btn-primary" onclick="analyzeImage()">🔍 ひらがなをよみとる！</button>
-    <div class="result-box" id="resultBox">
-      <h3>📝 みつかったひらがな（おして はずすこともできるよ）</h3>
-      <div class="kana-chips" id="foundKana"></div>
-      <button class="btn-green" style="margin-top:12px" onclick="addFoundKana()">➕ ぜんぶてもちにくわえる！</button>
-    </div>
-    <div class="manual-box">
-      <h3>✍️ てでひらがなをえらぶ</h3>
-      <div class="manual-selected-area" id="manualSelected"></div>
-      <div class="manual-kana-grid" id="manualKanaGrid"></div>
-      <div class="manual-actions">
-        <button class="btn-green" onclick="addManualKana()">➕ てもちにくわえる</button>
-        <button class="btn-secondary" onclick="clearManual()">🗑️ けす</button>
+
+    <!-- 左：画像＋読み取り / 右：あいうえお表 -->
+    <div class="camera-layout">
+      <!-- 左カラム: 画像プレビュー＋OCR -->
+      <div class="camera-left">
+        <img class="preview-img-small" id="previewImg" alt="">
+        <div class="ocr-status-box" id="ocrStatus">
+          <span id="ocrStatusText">よみとっています…</span>
+          <div class="ocr-progress"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
+        </div>
+        <button class="btn-primary" style="font-size:14px;padding:11px" onclick="analyzeImage()">🔍 よみとる！</button>
+        <div class="result-box" id="resultBox">
+          <h3>📝 みつかったひらがな</h3>
+          <div class="kana-chips" id="foundKana"></div>
+          <button class="btn-green" style="margin-top:10px;font-size:12px;padding:10px" onclick="addFoundKana()">➕ くわえる！</button>
+        </div>
+      </div>
+
+      <!-- 右カラム: あいうえお表 -->
+      <div class="camera-right">
+        <div class="manual-box" style="margin-top:0;padding:10px;">
+          <h3>👆 みつけたひらがなをおしてね。</h3>
+          <div class="manual-selected-area" id="manualSelected"></div>
+          <div id="manualKanaGrid"></div>
+          <div class="manual-actions" style="margin-top:6px;">
+            <button class="btn-green" onclick="addManualKana()">➕ くわえる</button>
+            <button class="btn-secondary" onclick="clearManual()">🗑️</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <button class="btn-secondary" style="margin-top:10px" onclick="addDemoKana()">🎲 ランダムにもらう</button>
+  <button class="btn-secondary" style="margin-top:8px" onclick="addDemoKana()">🎲 ランダムにもらう</button>
 </div>
 
 <!-- COLLECTION -->
@@ -556,6 +575,8 @@ const CATEGORIES={
 };
 
 const ALL_KANA='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'.split('');
+// あいうえお表順（5列）
+const AIUEO_TABLE=['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','','ゆ','','よ','ら','り','る','れ','ろ','わ','','','','を','ん','','','',''];
 
 const AWARDS=[
   {id:'kana10',emoji:'⭐',name:'ひらがなはじめて10もじ',desc:'10もじあつめたよ！',condition:s=>s.totalKana>=10},
@@ -828,7 +849,7 @@ function handleFileSelect(e){
   reader.onload=(ev)=>{
     selectedImageDataUrl=ev.target.result;
     const img=document.getElementById('previewImg');
-    if(img){img.src=ev.target.result;img.style.display='block';}
+    if(img){img.src=ev.target.result;img.style.display='block';img.style.maxHeight='300px';}
     showToast('📷 しゃしんをよみこみました！');
     const rb=document.getElementById('resultBox');
     if(rb) rb.style.display='none';
@@ -838,18 +859,56 @@ function handleFileSelect(e){
   reader.readAsDataURL(file);
 }
 
+// 画像前処理: グレースケール＋コントラスト強化
+function preprocessImage(dataUrl){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const scale=Math.min(1,1200/Math.max(img.width,img.height));
+      canvas.width=img.width*scale;
+      canvas.height=img.height*scale;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      // グレースケール変換
+      const idata=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const d=idata.data;
+      for(let i=0;i<d.length;i+=4){
+        const gray=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+        d[i]=d[i+1]=d[i+2]=gray;
+      }
+      ctx.putImageData(idata,0,0);
+      // コントラスト強化（二値化寄り）
+      const idata2=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const d2=idata2.data;
+      for(let i=0;i<d2.length;i+=4){
+        const v=d2[i];
+        // しきい値128で強調
+        const enhanced=v<128?Math.max(0,v-40):Math.min(255,v+40);
+        d2[i]=d2[i+1]=d2[i+2]=enhanced;
+      }
+      ctx.putImageData(idata2,0,0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.src=dataUrl;
+  });
+}
+
 async function analyzeImage(){
   if(!selectedImageDataUrl){showToast('📷 さきにしゃしんをえらんでね！');return;}
 
-  // Show OCR status bar
   const statusBox=document.getElementById('ocrStatus');
   const statusText=document.getElementById('ocrStatusText');
   const progressFill=document.getElementById('ocrProgressFill');
   statusBox.classList.add('show');
-  statusText.textContent='Tesseractをよみこみちゅう…';
+  statusText.textContent='がぞうをじゅんびちゅう…';
   progressFill.style.width='0%';
 
   try{
+    // 前処理
+    statusText.textContent='がぞうをかいぜんちゅう…';
+    const processed=await preprocessImage(selectedImageDataUrl);
+
     const worker=await Tesseract.createWorker('jpn',1,{
       logger:m=>{
         if(m.status==='recognizing text'){
@@ -857,31 +916,32 @@ async function analyzeImage(){
           progressFill.style.width=pct+'%';
           statusText.textContent=`よみとっています… ${pct}%`;
         } else {
-          statusText.textContent=m.status==='loading language traineddata'?'にほんごデータをよみこみちゅう…':
+          statusText.textContent=
+            m.status==='loading language traineddata'?'にほんごデータをよみこみちゅう…':
             m.status==='initializing api'?'じゅんびちゅう…':m.status;
         }
       }
     });
-
-    const {data:{text}}=await worker.recognize(selectedImageDataUrl);
+    // Tesseractパラメータ調整（日本語ひらがな重視）
+    await worker.setParameters({
+      tessedit_char_whitelist:'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん',
+    });
+    const {data:{text}}=await worker.recognize(processed);
     await worker.terminate();
 
-    // Extract hiragana only
-    const found=[...text].filter(c=>ALL_KANA.includes(c));
-    // Deduplicate while keeping order
+    const found=[...text].filter(k=>ALL_KANA.includes(k));
     const unique=[...new Set(found)];
-
     statusBox.classList.remove('show');
 
     if(unique.length>0){
       showFoundKana(unique);
       showToast(`✅ ${unique.length}もじみつけたよ！`);
     } else {
-      showToast('🔍 ひらがながみつからなかった。てでえらんでみてね！');
+      showToast('🔍 ひらがながみつからなかった。したからえらんでね！');
     }
   }catch(err){
     statusBox.classList.remove('show');
-    showToast('⚠️ よみとりにしっぱい。てでえらんでね！');
+    showToast('⚠️ よみとりにしっぱい。したからえらんでね！');
     console.error(err);
   }
 }
@@ -917,10 +977,45 @@ function addFoundKana(){
 function buildManualGrid(){
   const grid=document.getElementById('manualKanaGrid');
   grid.innerHTML='';
-  ALL_KANA.forEach(k=>{
+  // 画像の表と同じ並び:
+  // 列（右→左）: わ ら や ま は な た さ か あ（+ん列）
+  // 行（上→下）: あ い う え お
+  // direction:rtl で右から左に列を並べる
+  grid.style.cssText='display:grid;grid-template-rows:repeat(5,auto);grid-auto-flow:column;gap:3px;margin-bottom:8px;direction:rtl;width:100%;';
+  const TABLE_V=[
+    // あ列（右端）
+    'あ','い','う','え','お',
+    // か列
+    'か','き','く','け','こ',
+    // さ列
+    'さ','し','す','せ','そ',
+    // た列
+    'た','ち','つ','て','と',
+    // な列
+    'な','に','ぬ','ね','の',
+    // は列
+    'は','ひ','ふ','へ','ほ',
+    // ま列
+    'ま','み','む','め','も',
+    // や列（い・えは空白）
+    'や','','ゆ','','よ',
+    // ら列
+    'ら','り','る','れ','ろ',
+    // わ列（い・う・えは空白、おの位置にを）
+    'わ','','を','','',
+    // ん列（んのみ）
+    'ん','','','','',
+  ];
+  TABLE_V.forEach(k=>{
     const b=document.createElement('button');
-    b.className='mkb';b.textContent=k;b.dataset.k=k;
-    b.onclick=()=>manualTap(b);
+    b.style.direction='ltr';
+    if(!k){
+      b.className='mkb empty-cell';
+      b.disabled=true;
+    } else {
+      b.className='mkb';b.textContent=k;b.dataset.k=k;
+      b.onclick=()=>manualTap(b);
+    }
     grid.appendChild(b);
   });
 }
