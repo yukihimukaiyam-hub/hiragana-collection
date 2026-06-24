@@ -251,25 +251,15 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 
   <div id="cameraSection">
     <div class="capture-btns">
-      <!-- getUserMediaでネイティブカメラ起動 -->
-      <button class="capture-btn cam" onclick="openNativeCamera()">
+      <label class="capture-btn cam" id="camLabel">
+        <input type="file" id="cameraInput" accept="image/*" capture onchange="handleFileSelect(event)">
         <span class="btn-big-icon">📷</span>カメラをひらく
-      </button>
-      <!-- ファイル選択: captureなし -->
+      </label>
       <label class="capture-btn file">
         <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
         <span class="btn-big-icon">🖼️</span>がぞうをえらぶ
       </label>
     </div>
-    <!-- カメラプレビュー -->
-    <div id="cameraPreviewBox" style="display:none;position:relative;margin-bottom:10px;">
-      <video id="cameraVideo" style="width:100%;border-radius:16px;background:#000;" autoplay playsinline></video>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="btn-primary" style="margin:0;flex:2" onclick="capturePhoto()">📸 とる！</button>
-        <button class="btn-secondary" style="margin:0;flex:1" onclick="closeCamera()">✕ とじる</button>
-      </div>
-    </div>
-    <canvas id="shootCanvas" style="display:none"></canvas>
     <img class="preview-img" id="previewImg" alt="">
     <div class="ocr-status-box" id="ocrStatus">
       <span id="ocrStatusText">よみとっています…</span>
@@ -829,48 +819,6 @@ function switchTab(tab){
 
 // ===== OCR WITH TESSERACT =====
 let selectedImageDataUrl=null;
-let cameraStream=null;
-
-// ネイティブカメラ起動 (getUserMedia)
-async function openNativeCamera(){
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
-    });
-    cameraStream=stream;
-    const video=document.getElementById('cameraVideo');
-    video.srcObject=stream;
-    document.getElementById('cameraPreviewBox').style.display='block';
-    document.getElementById('previewImg').style.display='none';
-    document.getElementById('resultBox').style.display='none';
-  }catch(err){
-    // getUserMedia失敗時はinput[file]にフォールバック
-    showToast('📷 カメラをつかいます（ファイル選択）');
-    const inp=document.createElement('input');
-    inp.type='file';inp.accept='image/*';inp.capture='environment';
-    inp.onchange=handleFileSelect;
-    inp.click();
-  }
-}
-
-function capturePhoto(){
-  const video=document.getElementById('cameraVideo');
-  const canvas=document.getElementById('shootCanvas');
-  canvas.width=video.videoWidth||640;
-  canvas.height=video.videoHeight||480;
-  canvas.getContext('2d').drawImage(video,0,0);
-  selectedImageDataUrl=canvas.toDataURL('image/jpeg',0.9);
-  const img=document.getElementById('previewImg');
-  img.src=selectedImageDataUrl;
-  img.style.display='block';
-  closeCamera();
-  showToast('📷 しゃしんをとりました！');
-}
-
-function closeCamera(){
-  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
-  document.getElementById('cameraPreviewBox').style.display='none';
-}
 
 function handleFileSelect(e){
   const file=e.target&&e.target.files?e.target.files[0]:null;
@@ -880,10 +828,10 @@ function handleFileSelect(e){
   reader.onload=(ev)=>{
     selectedImageDataUrl=ev.target.result;
     const img=document.getElementById('previewImg');
-    img.src=ev.target.result;
-    img.style.display='block';
+    if(img){img.src=ev.target.result;img.style.display='block';}
     showToast('📷 しゃしんをよみこみました！');
-    document.getElementById('resultBox').style.display='none';
+    const rb=document.getElementById('resultBox');
+    if(rb) rb.style.display='none';
     const os=document.getElementById('ocrStatus');
     if(os) os.classList.remove('show');
   };
