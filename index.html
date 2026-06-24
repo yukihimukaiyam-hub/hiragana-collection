@@ -240,40 +240,49 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 <!-- CAMERA -->
 <div id="screen-camera" class="screen active">
   <div class="section-title">📷 ひらがなをさつえい</div>
-  <div class="capture-btns">
-    <label class="capture-btn cam">
-      <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleFileSelect(event)">
-      <span class="btn-big-icon">📷</span>カメラをひらく
-    </label>
-    <label class="capture-btn file">
-      <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
-      <span class="btn-big-icon">🖼️</span>がぞうをえらぶ
-    </label>
-  </div>
-  <img class="preview-img" id="previewImg" alt="">
-  <div class="ocr-status-box" id="ocrStatus">
-    <span id="ocrStatusText">よみとっています…</span>
-    <div class="ocr-progress"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
-  </div>
-  <button class="btn-primary" onclick="analyzeImage()">🔍 ひらがなをよみとる！</button>
 
-  <div class="result-box" id="resultBox">
-    <h3>📝 みつかったひらがな（おして はずすこともできるよ）</h3>
-    <div class="kana-chips" id="foundKana"></div>
-    <button class="btn-green" style="margin-top:12px" onclick="addFoundKana()">➕ ぜんぶてもちにくわえる！</button>
+  <div id="cameraOffNotice" style="display:none;background:linear-gradient(135deg,#FFF3CD,#FFE082);border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:6px;">🎲</div>
+    <div style="font-size:14px;font-weight:900;color:#856404;">ランダムモードでひらがなをあつめよう！</div>
+    <div style="font-size:11px;color:#9a7a00;margin-top:4px;">カメラはおやさんによってオフになっています</div>
   </div>
 
-  <!-- MANUAL ADD -->
-  <div class="manual-box">
-    <h3>✍️ てでひらがなをえらぶ</h3>
-    <div class="manual-selected-area" id="manualSelected">
+  <div id="cameraSection">
+    <div class="capture-btns">
+      <!-- カメラ直接起動: capture="camera" はAndroidで最も確実 -->
+      <label class="capture-btn cam">
+        <input type="file" id="cameraInput" accept="image/*" capture="camera" onchange="handleFileSelect(event)">
+        <span class="btn-big-icon">📷</span>カメラをひらく
+      </label>
+      <!-- ファイル選択: captureなしでギャラリーのみ -->
+      <label class="capture-btn file">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/gif" onchange="handleFileSelect(event)">
+        <span class="btn-big-icon">🖼️</span>がぞうをえらぶ
+      </label>
     </div>
-    <div class="manual-kana-grid" id="manualKanaGrid"></div>
-    <div class="manual-actions">
-      <button class="btn-green" onclick="addManualKana()">➕ てもちにくわえる</button>
-      <button class="btn-secondary" onclick="clearManual()">🗑️ けす</button>
+    <img class="preview-img" id="previewImg" alt="">
+    <div class="ocr-status-box" id="ocrStatus">
+      <span id="ocrStatusText">よみとっています…</span>
+      <div class="ocr-progress"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
+    </div>
+    <button class="btn-primary" onclick="analyzeImage()">🔍 ひらがなをよみとる！</button>
+    <div class="result-box" id="resultBox">
+      <h3>📝 みつかったひらがな（おして はずすこともできるよ）</h3>
+      <div class="kana-chips" id="foundKana"></div>
+      <button class="btn-green" style="margin-top:12px" onclick="addFoundKana()">➕ ぜんぶてもちにくわえる！</button>
+    </div>
+    <div class="manual-box">
+      <h3>✍️ てでひらがなをえらぶ</h3>
+      <div class="manual-selected-area" id="manualSelected"></div>
+      <div class="manual-kana-grid" id="manualKanaGrid"></div>
+      <div class="manual-actions">
+        <button class="btn-green" onclick="addManualKana()">➕ てもちにくわえる</button>
+        <button class="btn-secondary" onclick="clearManual()">🗑️ けす</button>
+      </div>
     </div>
   </div>
+
+  <button class="btn-secondary" style="margin-top:10px" onclick="addDemoKana()">🎲 ランダムにもらう</button>
 </div>
 
 <!-- COLLECTION -->
@@ -394,6 +403,16 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
       </div>
     </div>
     <div class="parent-panel">
+      <h3>📷 カメラせってい</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">カメラオフモード</div>
+          <div class="setting-sub">オンにするとランダムのみで遊べる</div>
+        </div>
+        <button class="toggle-switch" id="cameraOffToggle" onclick="toggleCameraOff()"></button>
+      </div>
+    </div>
+    <div class="parent-panel">
       <h3>🔐 PINのへんこう</h3>
       <div style="font-size:11px;color:#888;margin-bottom:8px;">4けたのすうじ</div>
       <div class="pin-change-row">
@@ -412,6 +431,16 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
         <div style="font-size:15px;font-weight:900;color:var(--grass)" id="remainingTime">--</div>
       </div>
     </div>
+    <div class="parent-panel">
+      <h3>💾 データバックアップ</h3>
+      <div style="font-size:11px;color:#888;margin-bottom:10px;">きろくをファイルにほぞん・ふっきゅうできます</div>
+      <div style="display:flex;gap:8px;">
+        <button class="pin-save-btn" style="flex:1;padding:10px;font-size:12px;background:var(--sky)" onclick="exportBackup()">⬇️ バックアップ</button>
+        <label class="pin-save-btn" style="flex:1;padding:10px;font-size:12px;background:var(--grass);cursor:pointer;text-align:center;">
+          ⬆️ ふっきゅう<input type="file" accept=".json" style="display:none" onchange="importBackup(event)">
+        </label>
+      </div>
+    </div>
     <button class="save-btn" onclick="saveParentSettings()">💾 ほぞん</button>
   </div>
 </div>
@@ -422,6 +451,60 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
   <div class="limit-title">きょうはここまで！</div>
   <div class="limit-sub">おやくそくのじかんがきたよ。<br>また あしたあそぼうね！</div>
   <button class="limit-unlock-btn" onclick="requestUnlock()">⏰ もうすこしあそぶ（おうちのひとに）</button>
+</div>
+
+
+<!-- SETUP WIZARD -->
+<div class="modal-overlay show" id="setupOverlay">
+  <div class="pin-modal" style="max-width:360px;">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:48px;">🌟</div>
+      <div class="pin-title" style="font-size:20px;">ひらがなコレクション</div>
+      <div class="pin-sub">はじめに おやさんのPINをせっていしてね</div>
+    </div>
+    <div id="setupStep1">
+      <div style="font-size:12px;color:#888;margin-bottom:10px;font-weight:700;">① あたらしいPINをきめてね（4けた）</div>
+      <div class="pin-dots" id="setupDots1">
+        <div class="pin-dot" id="sp0"></div><div class="pin-dot" id="sp1"></div>
+        <div class="pin-dot" id="sp2"></div><div class="pin-dot" id="sp3"></div>
+      </div>
+      <div class="pin-error" id="setupError"></div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="setupKey('1')">1</button>
+        <button class="pin-key" onclick="setupKey('2')">2</button>
+        <button class="pin-key" onclick="setupKey('3')">3</button>
+        <button class="pin-key" onclick="setupKey('4')">4</button>
+        <button class="pin-key" onclick="setupKey('5')">5</button>
+        <button class="pin-key" onclick="setupKey('6')">6</button>
+        <button class="pin-key" onclick="setupKey('7')">7</button>
+        <button class="pin-key" onclick="setupKey('8')">8</button>
+        <button class="pin-key" onclick="setupKey('9')">9</button>
+        <button class="pin-key" onclick="setupKey('0')" style="grid-column:2">0</button>
+        <button class="pin-key del" onclick="setupDel()">⌫</button>
+      </div>
+    </div>
+    <div id="setupStep2" style="display:none;">
+      <div style="font-size:12px;color:#888;margin-bottom:10px;font-weight:700;">② もういちどおなじPINをいれてね</div>
+      <div class="pin-dots" id="setupDots2">
+        <div class="pin-dot" id="sp4"></div><div class="pin-dot" id="sp5"></div>
+        <div class="pin-dot" id="sp6"></div><div class="pin-dot" id="sp7"></div>
+      </div>
+      <div class="pin-error" id="setupError2"></div>
+      <div class="pin-pad">
+        <button class="pin-key" onclick="setupKey2('1')">1</button>
+        <button class="pin-key" onclick="setupKey2('2')">2</button>
+        <button class="pin-key" onclick="setupKey2('3')">3</button>
+        <button class="pin-key" onclick="setupKey2('4')">4</button>
+        <button class="pin-key" onclick="setupKey2('5')">5</button>
+        <button class="pin-key" onclick="setupKey2('6')">6</button>
+        <button class="pin-key" onclick="setupKey2('7')">7</button>
+        <button class="pin-key" onclick="setupKey2('8')">8</button>
+        <button class="pin-key" onclick="setupKey2('9')">9</button>
+        <button class="pin-key" onclick="setupKey2('0')" style="grid-column:2">0</button>
+        <button class="pin-key del" onclick="setupDel2()">⌫</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- LOADING -->
@@ -488,7 +571,7 @@ const AWARDS=[
 
 // ===== STATE =====
 let myKana={},unlockedItems=new Set(),currentCategory='どうぶつ',wordSlots=[],earnedAwards=new Set();
-let parentSettings={pin:'1234',limitEnabled:false,dailyLimitMinutes:30};
+let parentSettings={pin:null,limitEnabled:false,dailyLimitMinutes:30,cameraOff:false};
 let timeState={date:'',playedSeconds:0,extraSeconds:0,sessionStart:null,limitHit:false};
 let pinBuffer='',pinMode='';
 let manualSelected=[];
@@ -502,6 +585,122 @@ function saveAll(){
     localStorage.setItem('hzukan_settings',JSON.stringify(parentSettings));
     localStorage.setItem('hzukan_time',JSON.stringify(timeState));
   }catch(e){}
+}
+
+// ===== SETUP WIZARD =====
+let setupPin1='',setupPin2='';
+function showSetupWizard(){
+  document.getElementById('setupOverlay').classList.add('show');
+}
+function updateSetupDots1(){
+  for(let i=0;i<4;i++){const d=document.getElementById('sp'+i);if(d){d.classList.toggle('filled',i<setupPin1.length);d.classList.remove('error');}}
+}
+function updateSetupDots2(){
+  for(let i=0;i<4;i++){const d=document.getElementById('sp'+(i+4));if(d){d.classList.toggle('filled',i<setupPin2.length);d.classList.remove('error');}}
+}
+function setupKey(k){
+  if(setupPin1.length>=4) return;
+  setupPin1+=k; updateSetupDots1();
+  if(setupPin1.length===4){
+    setTimeout(()=>{
+      document.getElementById('setupStep1').style.display='none';
+      document.getElementById('setupStep2').style.display='block';
+    },200);
+  }
+}
+function setupDel(){setupPin1=setupPin1.slice(0,-1);updateSetupDots1();}
+function setupKey2(k){
+  if(setupPin2.length>=4) return;
+  setupPin2+=k; updateSetupDots2();
+  if(setupPin2.length===4) setTimeout(confirmSetupPin,100);
+}
+function setupDel2(){setupPin2=setupPin2.slice(0,-1);updateSetupDots2();}
+function confirmSetupPin(){
+  if(setupPin1===setupPin2){
+    parentSettings.pin=setupPin1;
+    saveAll();
+    document.getElementById('setupOverlay').classList.remove('show');
+    initTimeState();updateHeaderCount();
+    renderCategoryTabs();renderZukan();buildManualGrid();renderManualSelected();
+    checkTimeLimit();applyCameraMode();
+    showToast('🔐 PINをせっていしました！');
+  } else {
+    document.getElementById('setupError2').textContent='PINがちがいます。もういちどやりなおしてね';
+    for(let i=0;i<4;i++){const d=document.getElementById('sp'+(i+4));if(d) d.classList.add('error');}
+    setupPin2='';
+    setTimeout(()=>{
+      updateSetupDots2();
+      document.getElementById('setupError2').textContent='';
+      // go back to step 1
+      setupPin1='';setupPin2='';
+      updateSetupDots1();
+      document.getElementById('setupStep2').style.display='none';
+      document.getElementById('setupStep1').style.display='block';
+    },1000);
+  }
+}
+
+// ===== CAMERA MODE =====
+function applyCameraMode(){
+  const off=parentSettings.cameraOff;
+  const section=document.getElementById('cameraSection');
+  const notice=document.getElementById('cameraOffNotice');
+  if(section) section.style.display=off?'none':'block';
+  if(notice) notice.style.display=off?'block':'none';
+}
+function toggleCameraOff(){
+  parentSettings.cameraOff=!parentSettings.cameraOff;
+  const btn=document.getElementById('cameraOffToggle');
+  if(btn) btn.className='toggle-switch'+(parentSettings.cameraOff?' on':'');
+}
+
+// ===== BACKUP / RESTORE =====
+function exportBackup(){
+  const data={
+    version:1,
+    date:new Date().toISOString(),
+    myKana,
+    unlocked:[...unlockedItems],
+    awards:[...earnedAwards],
+    settings:parentSettings,
+    timeState
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=new Date();
+  a.download=`hiragana-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('💾 バックアップをほぞんしました！');
+}
+function importBackup(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  event.target.value='';
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.version||!data.myKana) throw new Error('invalid');
+      myKana=data.myKana||{};
+      unlockedItems=new Set(data.unlocked||[]);
+      earnedAwards=new Set(data.awards||[]);
+      // keep current pin, restore other settings
+      const savedPin=parentSettings.pin;
+      parentSettings={...parentSettings,...(data.settings||{})};
+      parentSettings.pin=savedPin;
+      timeState={...timeState,...(data.timeState||{})};
+      saveAll();
+      updateHeaderCount();renderCollection();renderZukan();renderAwards();renderPalette();
+      closeParentPanel();
+      showToast('✅ データをふっきゅうしました！');
+    }catch{
+      showToast('⚠️ ファイルがよみこめませんでした');
+    }
+  };
+  reader.readAsText(file);
 }
 function loadAll(){
   try{myKana=JSON.parse(localStorage.getItem('hzukan_kana')||'{}');}catch{}
@@ -578,8 +777,12 @@ function verifyPin(){
 // ===== PARENT =====
 function openParentMode(){openPinModal('parent','⚙️ おやモード','PINをにゅうりょくしてください');}
 function showParentPanel(){
-  document.getElementById('limitToggle').className='toggle-switch'+(parentSettings.limitEnabled?' on':'');
-  document.getElementById('dailyLimitInput').value=parentSettings.dailyLimitMinutes;
+  const lt=document.getElementById('limitToggle');
+  if(lt) lt.className='toggle-switch'+(parentSettings.limitEnabled?' on':'');
+  const ct=document.getElementById('cameraOffToggle');
+  if(ct) ct.className='toggle-switch'+(parentSettings.cameraOff?' on':'');
+  const dl=document.getElementById('dailyLimitInput');
+  if(dl) dl.value=parentSettings.dailyLimitMinutes;
   updateParentStats();
   document.getElementById('parentOverlay').classList.add('show');
 }
@@ -591,8 +794,10 @@ function updateParentStats(){
   document.getElementById('remainingTime').textContent=parentSettings.limitEnabled?Math.floor(Math.max(0,allowed-played)/60)+'ふん':'せいげんなし';
 }
 function saveParentSettings(){
-  parentSettings.dailyLimitMinutes=parseInt(document.getElementById('dailyLimitInput').value)||30;
-  saveAll();closeParentPanel();showToast('💾 せっていをほぞんしました！');checkTimeLimit();
+  const dl=document.getElementById('dailyLimitInput');
+  if(dl) parentSettings.dailyLimitMinutes=parseInt(dl.value)||30;
+  saveAll();closeParentPanel();showToast('💾 せっていをほぞんしました！');
+  checkTimeLimit();applyCameraMode();
 }
 function saveNewPin(){
   const v=document.getElementById('newPinInput').value.replace(/\D/g,'');
@@ -968,9 +1173,14 @@ function playGetJingle(){
 }
 
 function init(){
-  initAudio();initBGM();loadAll();initTimeState();updateHeaderCount();
-  renderCategoryTabs();renderZukan();buildManualGrid();renderManualSelected();
-  checkTimeLimit();
+  initAudio();initBGM();loadAll();
+  if(!parentSettings.pin){
+    showSetupWizard();
+  } else {
+    initTimeState();updateHeaderCount();
+    renderCategoryTabs();renderZukan();buildManualGrid();renderManualSelected();
+    checkTimeLimit();applyCameraMode();
+  }
   setInterval(saveSessionTime,30000);
   document.addEventListener('visibilitychange',()=>{if(document.hidden) saveSessionTime();});
 }
