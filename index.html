@@ -1316,6 +1316,8 @@ function toggleBGM(){
 
 function playGetJingle(){
   if(!getJingleAudio) return;
+  // 再生中なら止めてから最初から再生
+  getJingleAudio.pause();
   getJingleAudio.currentTime = 0;
   getJingleAudio.play().catch(()=>{});
 }
