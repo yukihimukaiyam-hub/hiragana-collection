@@ -248,6 +248,7 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 
 <!-- CAMERA -->
 <div id="screen-camera" class="screen active">
+  <div class="section-title">📷 さつえい</div>
 
   <!-- カメラオフ時 -->
   <div id="cameraOffNotice" style="display:none;background:linear-gradient(135deg,#FFF3CD,#FFE082);border-radius:14px;padding:14px;margin-bottom:12px;text-align:center;">
@@ -257,39 +258,24 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
   </div>
 
   <div id="cameraSection">
-    <!-- ① カメラ＋よみとるボタン（横並び） -->
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <label class="capture-btn cam" style="flex:1;padding:12px 6px;">
-        <input type="file" id="cameraInput" accept="image/*" capture onchange="handleFileSelect(event)">
-        <span style="font-size:24px;">📷</span>
-        <span style="font-size:12px;">カメラ</span>
-      </label>
-      <button class="capture-btn" onclick="analyzeImage()"
-        style="flex:1;padding:12px 6px;background:linear-gradient(135deg,var(--grass),#4DB86A);color:white;box-shadow:0 4px 0 #3A9A54;border:none;">
-        <span style="font-size:24px;">🔍</span>
-        <span style="font-size:12px;">よみとる</span>
-      </button>
-    </div>
+    <!-- カメラボタン -->
+    <label class="capture-btn cam" style="display:flex;width:100%;padding:16px;margin-bottom:12px;justify-content:center;gap:10px;">
+      <input type="file" id="cameraInput" accept="image/*" capture onchange="handleFileSelect(event)">
+      <span style="font-size:28px;">📷</span>
+      <span style="font-size:16px;font-weight:900;">カメラをひらく</span>
+    </label>
 
-    <!-- OCRプログレス -->
-    <div class="ocr-status-box" id="ocrStatus">
-      <span id="ocrStatusText">よみとっています…</span>
-      <div class="ocr-progress"><div class="ocr-progress-fill" id="ocrProgressFill" style="width:0%"></div></div>
-    </div>
-
-    <!-- ② 撮影後の画像（あれば表示） -->
+    <!-- 撮影後の画像 -->
     <img class="preview-img-small" id="previewImg" alt="">
 
-    <!-- ③ 読み取り結果チップ -->
-    <div class="result-box" id="resultBox">
-      <h3>📝 みつかったひらがな（おして はずせるよ）</h3>
-      <div class="kana-chips" id="foundKana"></div>
-      <button class="btn-green" style="margin-top:10px;font-size:13px;padding:10px" onclick="addFoundKana()">➕ てもちにくわえる！</button>
+    <!-- キャッチコピー -->
+    <div style="background:linear-gradient(135deg,#E8F7FF,#F0FFF4);border-radius:14px;padding:14px 16px;margin-bottom:12px;text-align:center;font-size:15px;font-weight:900;color:var(--dark);line-height:1.8;">
+      がめん の なか の<br>ひらがな を あつめよう！
     </div>
 
-    <!-- ④ ひらがな表（全幅） -->
-    <div style="background:white;border-radius:16px;padding:12px;margin-top:10px;box-shadow:var(--shadow);">
-      <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">👆 よみとったひらがなをえらんでね！</div>
+    <!-- ひらがな表 -->
+    <div style="background:white;border-radius:16px;padding:12px;box-shadow:var(--shadow);">
+      <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">👆 みつけたひらがなをおしてね！</div>
       <div class="manual-selected-area" id="manualSelected"></div>
       <div id="manualKanaGrid"></div>
       <div style="display:flex;gap:8px;margin-top:8px;">
