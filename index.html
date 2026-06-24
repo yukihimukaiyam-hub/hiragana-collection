@@ -103,9 +103,10 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 .palette-area{background:white;border-radius:20px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px;}
 .palette-area h3{font-size:12px;color:#888;font-weight:700;margin-bottom:10px;}
 .palette-grid{display:flex;flex-wrap:wrap;gap:7px;}
-.palette-chip{background:linear-gradient(135deg,var(--sky),var(--lavender));color:white;font-size:20px;font-weight:900;width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(91,200,245,0.6);cursor:pointer;transition:transform .15s;user-select:none;}
+.palette-chip{background:linear-gradient(135deg,var(--sky),var(--lavender));color:white;font-size:20px;font-weight:900;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(91,200,245,0.6);cursor:pointer;transition:transform .15s;user-select:none;position:relative;}
 .palette-chip:active{transform:scale(0.9);}
-.palette-chip.used{opacity:0.25;pointer-events:none;}
+.palette-chip.used{display:none;}
+.chip-badge{position:absolute;top:-5px;right:-5px;background:var(--coral);color:white;font-size:9px;font-weight:900;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none;}
 .word-actions{display:flex;gap:8px;}
 .word-actions .btn-primary{margin:0;flex:2;font-size:14px;}
 .word-actions .btn-secondary{margin:0;flex:1;font-size:14px;}
@@ -309,13 +310,6 @@ header{background:linear-gradient(90deg,var(--sky),var(--lavender));padding:12px
 
   <!-- つくったことば -->
   <div class="word-area empty" id="wordArea"></div>
-
-  <!-- てもちのひらがな一覧 -->
-  <div style="background:white;border-radius:16px;padding:12px;box-shadow:var(--shadow);margin-bottom:12px;">
-    <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">🔤 てもちのひらがな</div>
-    <div class="collection-grid" id="collectionGrid"></div>
-    <div style="text-align:center;color:#ccc;font-size:12px;padding:10px 0;display:none" id="emptyCollection">まだひらがながありません</div>
-  </div>
 
   <!-- ならべるパレット -->
   <div class="palette-area">
@@ -840,7 +834,7 @@ function switchTab(tab){
   const btn=document.querySelector(`[data-tab="${tab}"]`);
   if(btn) btn.classList.add('active');
   if(tab==='collection') renderCollection(); // kept for compatibility
-  if(tab==='word'){renderCollection();renderPalette();}
+  if(tab==='word'){renderPalette();}
   if(tab==='zukan') renderZukan();
   if(tab==='awards') renderAwards();
   if(tab==='parent') updateParentStats();
@@ -1002,38 +996,23 @@ function addFoundKana(){
 function buildManualGrid(){
   const grid=document.getElementById('manualKanaGrid');
   grid.innerHTML='';
-  // 画像の表と同じ並び:
-  // 列（右→左）: わ ら や ま は な た さ か あ（+ん列）
-  // 行（上→下）: あ い う え お
-  // direction:rtl で右から左に列を並べる
-  grid.style.cssText='display:grid;grid-template-rows:repeat(5,1fr);grid-auto-flow:column;gap:5px;margin-bottom:0;direction:rtl;width:100%;';
-  const TABLE_V=[
-    // あ列（右端）
+  // 横5列・行ごとに並べる
+  grid.style.cssText='display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:0;width:100%;';
+  const TABLE_H=[
     'あ','い','う','え','お',
-    // か列
     'か','き','く','け','こ',
-    // さ列
     'さ','し','す','せ','そ',
-    // た列
     'た','ち','つ','て','と',
-    // な列
     'な','に','ぬ','ね','の',
-    // は列
     'は','ひ','ふ','へ','ほ',
-    // ま列
     'ま','み','む','め','も',
-    // や列（い・えは空白）
     'や','','ゆ','','よ',
-    // ら列
     'ら','り','る','れ','ろ',
-    // わ列（い・う・えは空白、おの位置にを）
-    'わ','','を','','',
-    // ん列（んのみ）
+    'わ','','','','を',
     'ん','','','','',
   ];
-  TABLE_V.forEach(k=>{
+  TABLE_H.forEach(k=>{
     const b=document.createElement('button');
-    b.style.direction='ltr';
     if(!k){
       b.className='mkb empty-cell';
       b.disabled=true;
@@ -1143,26 +1122,42 @@ function renderPalette(){
   const empty=document.getElementById('emptyPalette');
   grid.innerHTML='';
   const keys=Object.keys(myKana);
-  if(keys.length===0){empty.style.display='block';return;}
-  empty.style.display='none';
+  if(keys.length===0){if(empty) empty.style.display='block';return;}
+  if(empty) empty.style.display='none';
 
-  // あいうえお順で全文字をグループ表示
   const ORDER='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'+
     'がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉっゃゅょゎ';
   const sorted=keys.slice().sort((a,b)=>{
-    const ia=ORDER.indexOf(a), ib=ORDER.indexOf(b);
+    const ia=ORDER.indexOf(a),ib=ORDER.indexOf(b);
     return (ia===-1?999:ia)-(ib===-1?999:ib);
   });
+
+  // 1文字につき1チップ＋個数バッジ
   sorted.forEach(k=>{
-    for(let i=0;i<myKana[k];i++){
-      const c=document.createElement('div');c.className='palette-chip';c.textContent=k;
-      c.dataset.kana=k;c.dataset.idx=i;c.onclick=()=>addToWord(c);
-      grid.appendChild(c);
+    if(!myKana[k]||myKana[k]<=0) return;
+    const chip=document.createElement('div');
+    chip.className='palette-chip';
+    chip.textContent=k;
+    chip.dataset.kana=k;
+    // 個数バッジ（2枚以上の時）
+    if(myKana[k]>1){
+      const badge=document.createElement('span');
+      badge.className='chip-badge';
+      badge.textContent=myKana[k];
+      chip.appendChild(badge);
     }
+    chip.onclick=()=>addToWord(chip);
+    grid.appendChild(chip);
   });
   syncUsedChips();
 }
-function addToWord(chip){if(chip.classList.contains('used'))return;wordSlots.push(chip.dataset.kana);renderWordArea();syncUsedChips();}
+function addToWord(chip){
+  if(chip.classList.contains('used')) return;
+  const k=chip.dataset.kana;
+  wordSlots.push(k);
+  renderWordArea();
+  syncUsedChips();
+}
 function renderWordArea(){
   const area=document.getElementById('wordArea');
   area.classList.toggle('empty',wordSlots.length===0);area.innerHTML='';
@@ -1170,8 +1165,29 @@ function renderWordArea(){
 }
 function removeFromWord(idx){wordSlots.splice(idx,1);renderWordArea();syncUsedChips();}
 function syncUsedChips(){
-  const uc={};wordSlots.forEach(k=>uc[k]=(uc[k]||0)+1);
-  document.querySelectorAll('.palette-chip').forEach(c=>c.classList.toggle('used',parseInt(c.dataset.idx)<(uc[c.dataset.kana]||0)));
+  // wordSlotsで使用中の数を集計
+  const used={};
+  wordSlots.forEach(k=>used[k]=(used[k]||0)+1);
+  document.querySelectorAll('.palette-chip').forEach(chip=>{
+    const k=chip.dataset.kana;
+    const total=myKana[k]||0;
+    const usedCount=used[k]||0;
+    const remaining=total-usedCount;
+    // 残り0なら非表示
+    if(remaining<=0){
+      chip.classList.add('used');
+    } else {
+      chip.classList.remove('used');
+      // バッジ更新
+      let badge=chip.querySelector('.chip-badge');
+      if(remaining>1){
+        if(!badge){badge=document.createElement('span');badge.className='chip-badge';chip.appendChild(badge);}
+        badge.textContent=remaining;
+      } else {
+        if(badge) badge.remove();
+      }
+    }
+  });
 }
 function clearWord(){wordSlots=[];renderWordArea();syncUsedChips();document.getElementById('hintBox').style.display='none';}
 
